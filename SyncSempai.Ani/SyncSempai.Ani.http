@@ -1,0 +1,6 @@
+@SyncSempai.Ani_HostAddress = http://localhost:5078
+
+GET {{SyncSempai.Ani_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
