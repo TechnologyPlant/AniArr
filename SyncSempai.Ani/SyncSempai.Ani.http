@@ -1,6 +1,6 @@
-@SyncSempai.Ani_HostAddress = http://localhost:5078
+@SyncSempai.Ani_HostAddress = https://localhost:7133
 
-GET {{SyncSempai.Ani_HostAddress}}/weatherforecast/
+GET {{SyncSempai.Ani_HostAddress}}/watchListbyUserName/TestUser
 Accept: application/json
 
 ###

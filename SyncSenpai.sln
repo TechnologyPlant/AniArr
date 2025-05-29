@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncSenpai.Server", "SyncSenpai.Server\SyncSenpai.Server.csproj", "{972FD071-F431-4187-A54D-15138AEE5DC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncSenpai.Server", "SyncSenpai.Server\SyncSenpai.Server.csproj", "{972FD071-F431-4187-A54D-15138AEE5DC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncSempai.Ani", "SyncSempai.Ani\SyncSempai.Ani.csproj", "{62A57B5B-A135-47FE-A2C1-2AB84CC4F6CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncSempai.Ani", "SyncSempai.Ani\SyncSempai.Ani.csproj", "{62A57B5B-A135-47FE-A2C1-2AB84CC4F6CB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{240690C6-9335-4596-AA61-AE90C5230359}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncSempai.Ani.Tests", "Tests\SyncSempai.Ani.Tests\SyncSempai.Ani.Tests.csproj", "{C41FB030-CF21-4552-9839-A49D3B4BA214}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +25,18 @@ Global
 		{62A57B5B-A135-47FE-A2C1-2AB84CC4F6CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62A57B5B-A135-47FE-A2C1-2AB84CC4F6CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62A57B5B-A135-47FE-A2C1-2AB84CC4F6CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C41FB030-CF21-4552-9839-A49D3B4BA214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C41FB030-CF21-4552-9839-A49D3B4BA214}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C41FB030-CF21-4552-9839-A49D3B4BA214}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C41FB030-CF21-4552-9839-A49D3B4BA214}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C41FB030-CF21-4552-9839-A49D3B4BA214} = {240690C6-9335-4596-AA61-AE90C5230359}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B46667B4-3617-48E4-99DC-E2B640062A9A}
 	EndGlobalSection
 EndGlobal
