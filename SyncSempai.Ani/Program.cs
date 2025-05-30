@@ -15,8 +15,6 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddHttpClient();
-        builder.Services.AddScoped<AniService>();
 
         var app = builder.Build();
 

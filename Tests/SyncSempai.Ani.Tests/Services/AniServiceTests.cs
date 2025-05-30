@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Moq;
-using SyncSempai.Ani.Services;
+using SyncSenpai.Ani.Services;
 
 namespace SyncSempai.Ani.Tests.Services
 {

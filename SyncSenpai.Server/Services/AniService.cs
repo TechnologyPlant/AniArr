@@ -1,8 +1,8 @@
-﻿using SyncSempai.Ani.Entities.External;
+﻿using SyncSenpai.Server.Entities.External;
 using System.Text;
 using System.Text.Json;
 
-namespace SyncSempai.Ani.Services;
+namespace SyncSenpai.Ani.Services;
 
 public partial class AniService
 {

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SyncSempai.Ani.Entities.External;
+namespace SyncSenpai.Server.Entities.External;
 
 public class Entry
 {

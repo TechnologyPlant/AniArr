@@ -1,6 +1,7 @@
 using SyncSenpai.Server.Components;
 using Marten;
 using Weasel.Core;
+using SyncSenpai.Ani.Services;
 
 namespace SyncSenpai.Server
 {
@@ -31,6 +32,9 @@ namespace SyncSenpai.Server
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            builder.Services.AddHttpClient();
+            builder.Services.AddScoped<AniService>();
 
             var app = builder.Build();
 
