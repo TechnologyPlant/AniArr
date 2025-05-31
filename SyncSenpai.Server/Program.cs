@@ -15,8 +15,24 @@ namespace SyncSenpai.Server
             // .NET application with Marten's default configuration
             builder.Services.AddMarten(options =>
             {
+                var host = "localhost";
+                var port = 5432;
+                var db = Environment.GetEnvironmentVariable("POSTGRES_DB");
+                var user = Environment.GetEnvironmentVariable("POSTGRES_USER");
+                var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+
+                var martenConnectionString = $"Host={host};Port={port};Database={db};Username={user};Password={password}";
+
+                var connString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("Postgres");
+
+                Console.WriteLine(Environment.GetEnvironmentVariable("CONNECTION_STRING"));
+
+                if (string.IsNullOrEmpty(connString))
+                    throw new InvalidOperationException("No valid connection string found");
+
+
                 // Establish the connection string to your Marten database
-                options.Connection(builder.Configuration.GetConnectionString("Marten")!);
+                options.Connection(connString);
 
                 // Specify that we want to use STJ as our serializer
                 options.UseSystemTextJsonForSerialization();
