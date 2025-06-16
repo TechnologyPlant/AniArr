@@ -1,0 +1,76 @@
+﻿@page "/config"
+@using SyncSenpai.Ani.Entities
+@using SyncSenpai.Ani.Repositories
+@using SyncSenpai.Ani.Services
+@using SyncSenpai.Server.Entities.External
+
+@inject IConfigRepository ConfigRepository
+@inject IAniService AniService
+
+
+<h3>Configuration</h3>
+
+@if (_loaded)
+{
+    <div>
+        <span>Target Username:</span>
+        <InputText @bind-Value="_configModel.UserName" @bind-Value:after="UsernameChanged" />
+    </div>
+    <div>
+        <button @onclick="@TestUser">Test</button>
+        <button @onclick="SaveConfig" disabled="@_saveDisabled">Save</button>
+    </div>
+    <div>
+        @foreach (var list in _mediaLists)
+        {
+            <span>@list.Name</span>
+            <ul>
+                @foreach (var entry in list.Entries)
+                {
+                    <li>@entry.Media.Title.English</li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+
+@code {
+    bool _loaded;
+
+    private ConfigModel _configModel = new();
+    private List<MediaList> _mediaLists = [];
+    private bool _saveDisabled = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _configModel = await ConfigRepository.GetConfigAsync();
+
+        _loaded = true;
+        await base.OnInitializedAsync();
+    }
+
+    private async Task SaveConfig()
+    {
+        await ConfigRepository.StoreConfigAsync(_configModel);
+        _saveDisabled = true;
+    }
+
+    private async Task TestUser()
+    {
+        try
+        {
+            var root = await AniService.GetUserWatchListAsync(_configModel.UserName);
+            _mediaLists = root.Data.MediaListCollection.Lists;
+        }
+        catch (Exception)
+        {
+            return;
+        }
+        _saveDisabled = false;
+    }
+    private void UsernameChanged()
+    {
+        _saveDisabled = true;
+    }
+}

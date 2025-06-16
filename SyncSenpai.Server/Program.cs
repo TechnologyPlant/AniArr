@@ -2,6 +2,9 @@ using SyncSenpai.Server.Components;
 using Marten;
 using Weasel.Core;
 using SyncSenpai.Ani.Services;
+using SyncSenpai.Ani.Entities;
+using Marten.Events.Projections;
+using SyncSenpai.Ani.Repositories;
 
 namespace SyncSenpai.Server
 {
@@ -10,22 +13,18 @@ namespace SyncSenpai.Server
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
+            builder.Services.AddLogging();
+
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+
 
             // This is the absolute, simplest way to integrate Marten into your
             // .NET application with Marten's default configuration
             builder.Services.AddMarten(options =>
             {
-                var host = "localhost";
-                var port = 5432;
-                var db = Environment.GetEnvironmentVariable("POSTGRES_DB");
-                var user = Environment.GetEnvironmentVariable("POSTGRES_USER");
-                var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-
-                var martenConnectionString = $"Host={host};Port={port};Database={db};Username={user};Password={password}";
-
                 var connString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("Postgres");
-
-                Console.WriteLine(Environment.GetEnvironmentVariable("CONNECTION_STRING"));
 
                 if (string.IsNullOrEmpty(connString))
                     throw new InvalidOperationException("No valid connection string found");
@@ -51,6 +50,9 @@ namespace SyncSenpai.Server
 
             builder.Services.AddHttpClient();
             builder.Services.AddScoped<AniService>();
+
+            builder.Services.AddScoped<IConfigRepository, ConfigRepository>();
+            builder.Services.AddScoped<IAniService, AniService>();
 
             var app = builder.Build();
 

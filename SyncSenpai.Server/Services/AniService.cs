@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace SyncSenpai.Ani.Services;
 
-public partial class AniService
+public partial class AniService : IAniService
 {
     private readonly ILogger<AniService> _logger;
     private readonly HttpClient _httpClient;
@@ -31,15 +31,26 @@ public partial class AniService
         var queryObject = new
         {
             query = _WatchListQuery,
-            variables = new { userName = username, type="ANIME" }
+            variables = new { userName = username, type = "ANIME" }
         };
         StringContent content = new(JsonSerializer.Serialize(queryObject), Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync(_aniListEndpoint, content);
         response.EnsureSuccessStatusCode();
+        Root? result;
+        try
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            result = JsonSerializer.Deserialize<Root>(responseContent);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
 
-        var responseContent =await response.Content.ReadAsStringAsync();
-        var result=JsonSerializer.Deserialize<Root>(responseContent);
-
+        if(result is null)
+        {
+            throw new InvalidOperationException();
+        }
         return result;
     }
 }
