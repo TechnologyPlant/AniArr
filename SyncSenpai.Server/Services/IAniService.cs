@@ -1,4 +1,4 @@
-﻿using SyncSenpai.Server.Entities.External;
+﻿using SyncSenpai.Server.Entities.External.AnilistResponse.WatchList;
 
 namespace SyncSenpai.Ani.Services
 {

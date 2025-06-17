@@ -1,4 +1,4 @@
-﻿using SyncSenpai.Server.Entities.External;
+﻿using SyncSenpai.Server.Entities.External.AnilistResponse.WatchList;
 using System.Text;
 using System.Text.Json;
 
