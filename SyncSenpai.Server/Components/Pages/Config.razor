@@ -3,9 +3,13 @@
 @using SyncSenpai.Ani.Repositories
 @using SyncSenpai.Ani.Services
 @using SyncSenpai.Server.Entities.External
+@using SyncSenpai.Server.Entities.External.AnilistResponse.WatchList
+@using System.Text.Json
 
 @inject IConfigRepository ConfigRepository
 @inject IAniService AniService
+@inject IToastService ToastService
+@inject ILogger<Config> Logger
 
 
 <h3>Configuration</h3>
@@ -18,6 +22,7 @@
     </div>
     <div>
         <button @onclick="@TestUser">Test</button>
+        <button @onclick="@ClearWatchlist">Clear</button>
         <button @onclick="SaveConfig" disabled="@_saveDisabled">Save</button>
     </div>
     <div>
@@ -32,6 +37,22 @@
             </ul>
         }
     </div>
+
+    <br />
+    <h3>AniList to TVDB JSON</h3>
+    <div>
+        <span>Last Updated: @_configModel.LookupLastUpdated</span>
+    </div>
+    <div>
+        <InputFile OnChange="LoadJson">Upload JSON</InputFile>
+    </div>
+    <div>
+        <button @onclick="ParseJson" disabled="@_parseJsonDisabled">Parse JSON</button>
+    </div>
+    <div>
+        <button @onclick="SaveJson" disabled="@_saveJsonDisabled">Save JSON</button>
+    </div>
+
 }
 
 
@@ -40,7 +61,10 @@
 
     private ConfigModel _configModel = new();
     private List<MediaList> _mediaLists = [];
-    private bool _saveDisabled = true;
+    private bool _saveDisabled => !_successfulAniConnect || !_configModified;
+    private bool _configModified = true;
+    private bool _successfulAniConnect = true;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,7 +77,9 @@
     private async Task SaveConfig()
     {
         await ConfigRepository.StoreConfigAsync(_configModel);
-        _saveDisabled = true;
+        _configModified = false;
+
+        ToastService.ShowSuccess("Configuration Saved");
     }
 
     private async Task TestUser()
@@ -63,14 +89,58 @@
             var root = await AniService.GetUserWatchListAsync(_configModel.UserName);
             _mediaLists = root.Data.MediaListCollection.Lists;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            ToastService.ShowError($"Unable to load watchlist data for user {_configModel.UserName}");
             return;
         }
-        _saveDisabled = false;
+        _successfulAniConnect = true;
     }
     private void UsernameChanged()
     {
-        _saveDisabled = true;
+        _configModified = true;
+        _successfulAniConnect = false;
+    }
+    private void ClearWatchlist() => _mediaLists.Clear();
+
+    private IBrowserFile? _jsonFile;
+    private IAsyncEnumerable<FribbAniListItem?>? _jsonList;
+
+    private bool _parseJsonDisabled => _jsonFile is null;
+    private bool _saveJsonDisabled => _jsonList is null;
+
+    private void LoadJson(InputFileChangeEventArgs args)
+    {
+        _jsonFile = args.File;
+    }
+    private async Task ParseJson()
+    {
+
+        var stream = _jsonFile.OpenReadStream(10_000_000);
+
+        _jsonList = JsonSerializer.DeserializeAsyncEnumerable<FribbAniListItem?>(stream);
+
+        if (_jsonList != null)
+        {
+            ToastService.ShowSuccess($"Parsed {_jsonFile.Name} into list.");
+        }
+        else
+        {
+            ToastService.ShowError("Unabled to convert file to expected format.");
+        }
+
+    }
+    private async Task SaveJson()
+    {
+        List<Task> saveTasks = [];
+
+        await foreach (var item in _jsonList)
+        {
+            if (item is null) continue;
+            saveTasks.Add(ConfigRepository.StoreFribbItem(item));
+        }
+
+        await Task.WhenAll(saveTasks);
+        ToastService.ShowSuccess($"Saved  anilist entries.");
     }
 }

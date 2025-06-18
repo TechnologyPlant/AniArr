@@ -31,5 +31,12 @@ namespace SyncSenpai.Ani.Repositories
             session.Store(configModel);
             await session.SaveChangesAsync();
         }
+
+        public async Task StoreFribbItem(FribbAniListItem item)
+        {
+            await using var session = _documentStore.LightweightSession();
+            session.Store(item);
+            await session.SaveChangesAsync();
+        }
     }
 }
