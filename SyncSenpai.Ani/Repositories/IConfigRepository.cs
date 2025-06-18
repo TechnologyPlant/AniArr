@@ -6,6 +6,6 @@ namespace SyncSenpai.Ani.Repositories
     {
         Task<ConfigModel> GetConfigAsync();
         Task StoreConfigAsync(ConfigModel configModel);
-        Task StoreFribbItem(FribbAniListItem item);
+        Task StoreFribbItem(List<FribbAniListItem> items);
     }
 }

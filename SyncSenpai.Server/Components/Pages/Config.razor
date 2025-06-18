@@ -91,6 +91,7 @@
         }
         catch (Exception ex)
         {
+            Logger.LogError(0, ex, ex.Message);
             ToastService.ShowError($"Unable to load watchlist data for user {_configModel.UserName}");
             return;
         }
@@ -104,7 +105,7 @@
     private void ClearWatchlist() => _mediaLists.Clear();
 
     private IBrowserFile? _jsonFile;
-    private IAsyncEnumerable<FribbAniListItem?>? _jsonList;
+    private List<FribbAniListItem>? _jsonList;
 
     private bool _parseJsonDisabled => _jsonFile is null;
     private bool _saveJsonDisabled => _jsonList is null;
@@ -115,10 +116,11 @@
     }
     private async Task ParseJson()
     {
+        if (_jsonFile is null) return;
 
         var stream = _jsonFile.OpenReadStream(10_000_000);
 
-        _jsonList = JsonSerializer.DeserializeAsyncEnumerable<FribbAniListItem?>(stream);
+        _jsonList = await JsonSerializer.DeserializeAsync<List<FribbAniListItem>>(stream);
 
         if (_jsonList != null)
         {
@@ -133,14 +135,19 @@
     private async Task SaveJson()
     {
         List<Task> saveTasks = [];
-
-        await foreach (var item in _jsonList)
+        if (_jsonList is null) return;
+        try
         {
-            if (item is null) continue;
-            saveTasks.Add(ConfigRepository.StoreFribbItem(item));
-        }
+            saveTasks.Add(ConfigRepository.StoreFribbItem(_jsonList));
 
-        await Task.WhenAll(saveTasks);
-        ToastService.ShowSuccess($"Saved  anilist entries.");
+            await Task.WhenAll(saveTasks);
+            ToastService.ShowSuccess($"Saved  anilist entries.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(0, ex, ex.Message);
+            ToastService.ShowError($"Exception during saving entries.");
+            throw;
+        }
     }
 }
