@@ -1,10 +1,9 @@
-using SyncSenpai.Server.Components;
+using Blazored.Toast;
 using Marten;
-using Weasel.Core;
-using SyncSenpai.Ani.Services;
-using SyncSenpai.Ani.Entities;
-using Marten.Events.Projections;
 using SyncSenpai.Ani.Repositories;
+using SyncSenpai.Ani.Services;
+using SyncSenpai.Server.Components;
+using Weasel.Core;
 
 namespace SyncSenpai.Server
 {
@@ -13,12 +12,12 @@ namespace SyncSenpai.Server
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            
+
             builder.Services.AddLogging();
 
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
-
+            builder.Services.AddBlazoredToast();
 
             // This is the absolute, simplest way to integrate Marten into your
             // .NET application with Marten's default configuration
