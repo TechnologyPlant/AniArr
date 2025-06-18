@@ -1,0 +1,147 @@
+﻿@using SyncSenpai.Sonarr.Entities
+@using System.Text.Json
+@using SyncSenpai.Sonarr.Repositories
+
+@inject IHttpClientFactory HttpClientFactory
+@inject IToastService ToastService
+@inject SonarrConfigRepository SonarrConfigRepository
+
+<h2>Sonarr</h2>
+@if (_loaded)
+{
+
+    <div>
+        <span>Sonarr Address:</span>
+        <InputText @bind-Value="_sonarrConfig.SonarrUrl" @bind-Value:after="() => _sonarrModified = true" />
+    </div>
+    <div>
+        <span>Sonarr Api Key:</span>
+        <InputText @bind-Value="_sonarrConfig.SonarrApiKey" @bind-Value:after="() => _sonarrModified = true" />
+    </div>
+    <div>
+        <button @onclick="@TestSonarr">Test</button>
+    </div>
+    @if (_sonarrConnected)
+    {
+        <InputSelect TValue="AnimeDistinguisher" @bind-Value="@_sonarrConfig.AnimeDistinguisher" @bind-Value:after="DistinguisherChanged">
+            <option value="@AnimeDistinguisher.Undefined">Undefined</option>
+            <option value="@AnimeDistinguisher.Tag">Tag</option>
+            <option value="@AnimeDistinguisher.Directory">Directory</option>
+        </InputSelect>
+        if (_sonarrConfig.AnimeDistinguisher == AnimeDistinguisher.Tag)
+        {
+            <InputSelect TValue="SonarrTag" @bind-Value="@_sonarrConfig.SonarrTag">
+                @foreach (var tag in _tags)
+                {
+                    <option value="tag">@tag.Name</option>
+                }
+            </InputSelect>
+        }
+    }
+    <br />
+}
+
+@code {
+    bool _loaded;
+
+    private SyncSenpai.Sonarr.Entities.SonarrConfig _sonarrConfig = new();
+    private bool _sonarrConnected = false;
+    private bool _sonarrModified = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _sonarrConfig = await SonarrConfigRepository.GetConfigAsync();
+
+        _loaded = true;
+        await base.OnInitializedAsync();
+    }
+
+    private async Task TestSonarr()
+    {
+        using var client = HttpClientFactory.CreateClient();
+
+        try
+        {
+            client.BaseAddress = new($"{_sonarrConfig.SonarrUrl}");
+            client.DefaultRequestHeaders.Add("X-Api-Key", _sonarrConfig.SonarrApiKey);
+            var result = await client.GetAsync("/api");
+            if (result.IsSuccessStatusCode)
+            {
+                ToastService.ShowSuccess("Successful call to Sonarr service.");
+                await SonarrConfigRepository.StoreConfigAsync(_sonarrConfig);
+                ToastService.ShowSuccess("Save sonarr configuration.");
+                _sonarrConnected = true;
+            }
+            else
+            {
+                ToastService.ShowError("Failed call to Sonarr service");
+                _sonarrConnected = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Failed call to Sonarr service, {Environment.NewLine}, {ex.Message}");
+            _sonarrConnected = false;
+        }
+    }
+    private List<SonarrTag> _tags = [];
+    private List<string> _directories = [];
+    private async Task DistinguisherChanged()
+    {
+        using var client = HttpClientFactory.CreateClient();
+        client.BaseAddress = new($"{_sonarrConfig.SonarrUrl}");
+        client.DefaultRequestHeaders.Add("X-Api-Key", _sonarrConfig.SonarrApiKey);
+
+        if (_sonarrConfig.AnimeDistinguisher == AnimeDistinguisher.Tag)
+        {
+            var tags = await client.GetAsync("/api/v3/tag");
+
+            if (tags.IsSuccessStatusCode)
+            {
+                var contentStream = await tags.Content.ReadAsStreamAsync();
+                var deserializedTags = await JsonSerializer.DeserializeAsync<List<SonarrTag>>(contentStream);
+                if (deserializedTags is null)
+                {
+                    ToastService.ShowError("Failed deserialization of tags from sonarr.");
+                }
+                else
+                {
+                    _tags = deserializedTags;
+                    ToastService.ShowSuccess($"Loaded {_tags.Count} tags from Sonarr.");
+                }
+            }
+            else
+            {
+                ToastService.ShowError("Failed call to get tags from Sonarr.");
+            }
+        }
+        else if (_sonarrConfig.AnimeDistinguisher == AnimeDistinguisher.Directory)
+        {
+            var directories = await client.GetAsync("/api/v3/filesystem");
+            if (directories.IsSuccessStatusCode)
+            {
+                var contentStream = await directories.Content.ReadAsStreamAsync();
+                var deserializedDirectories = await JsonSerializer.DeserializeAsync<List<string>>(contentStream);
+                if (deserializedDirectories is null)
+                {
+                    ToastService.ShowError("Failed deserialization of directories from sonarr.");
+                }
+                else
+                {
+                    _directories = deserializedDirectories;
+                    ToastService.ShowSuccess($"Loaded {_directories.Count} directories from Sonarr.");
+                }
+            }
+            else
+            {
+                ToastService.ShowError("Failed call to get directories from Sonarr.");
+            }
+        }
+    }
+    private void SonarrTagChanged(SonarrTag sonarrTag)
+    {
+        _sonarrConfig.SonarrTag = sonarrTag;
+        ToastService.ShowSuccess($"Selected tag set to {sonarrTag.Name}.");
+    }
+}

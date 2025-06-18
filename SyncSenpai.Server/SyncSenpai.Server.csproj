@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SyncSenpai.Ani\SyncSenpai.Ani.csproj" />
+    <ProjectReference Include="..\SyncSenpai.Sonarr\SyncSenpai.Sonarr.csproj" />
   </ItemGroup>
 
 </Project>

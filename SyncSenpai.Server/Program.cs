@@ -3,6 +3,7 @@ using Marten;
 using SyncSenpai.Ani.Repositories;
 using SyncSenpai.Ani.Services;
 using SyncSenpai.Server.Components;
+using SyncSenpai.Sonarr.Repositories;
 using Weasel.Core;
 
 namespace SyncSenpai.Server
@@ -49,6 +50,7 @@ namespace SyncSenpai.Server
 
             builder.Services.AddHttpClient();
             builder.Services.AddScoped<AniService>();
+            builder.Services.AddScoped<SonarrConfigRepository>();
 
             builder.Services.AddScoped<IConfigRepository, ConfigRepository>();
             builder.Services.AddScoped<IAniService, AniService>();

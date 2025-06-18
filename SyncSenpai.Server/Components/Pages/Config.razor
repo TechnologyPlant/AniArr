@@ -2,6 +2,7 @@
 @using SyncSenpai.Ani.Entities
 @using SyncSenpai.Ani.Repositories
 @using SyncSenpai.Ani.Services
+@using SyncSenpai.Server.Components.Components
 @using SyncSenpai.Server.Entities.External
 @using SyncSenpai.Server.Entities.External.AnilistResponse.WatchList
 @using System.Text.Json
@@ -39,6 +40,9 @@
     </div>
 
     <br />
+    <SonarrConfig/>
+
+    <br />
     <h3>AniList to TVDB JSON</h3>
     <div>
         <span>Last Updated: </span>
@@ -66,8 +70,8 @@
     private ConfigModel _configModel = new();
     private List<MediaList> _mediaLists = [];
     private bool _saveDisabled => !_successfulAniConnect || !_configModified;
-    private bool _configModified = true;
-    private bool _successfulAniConnect = true;
+    private bool _configModified = false;
+    private bool _successfulAniConnect = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -152,4 +156,5 @@
             throw;
         }
     }
+   
 }
