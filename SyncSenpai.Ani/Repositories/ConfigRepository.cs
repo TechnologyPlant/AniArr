@@ -32,11 +32,14 @@ namespace SyncSenpai.Ani.Repositories
             await session.SaveChangesAsync();
         }
 
-        public async Task StoreFribbItem(List<FribbAniListItem> items)
+        public async Task StoreFribbItems(List<FribbAniListItem> items, ConfigModel configModel)
         {
             try
             {
                 await _documentStore.BulkInsertAsync(items);
+                configModel.FribbListLastUpdated = DateTime.Now;
+                await StoreConfigAsync(configModel);
+                _logger.LogInformation($"timezone is {TimeZoneInfo.Local}");
             }
             catch (Exception ex)
             {

@@ -41,7 +41,11 @@
     <br />
     <h3>AniList to TVDB JSON</h3>
     <div>
-        <span>Last Updated: @_configModel.LookupLastUpdated</span>
+        <span>Last Updated: </span>
+        @if (_configModel.FribbListLastUpdated is not null)
+        {
+            <ToLocal DateTime="@_configModel.FribbListLastUpdated.Value" Format="mmm dd yyyy hh:MM:ss"></ToLocal>
+        }
     </div>
     <div>
         <InputFile OnChange="LoadJson">Upload JSON</InputFile>
@@ -138,9 +142,7 @@
         if (_jsonList is null) return;
         try
         {
-            saveTasks.Add(ConfigRepository.StoreFribbItem(_jsonList));
-
-            await Task.WhenAll(saveTasks);
+            await ConfigRepository.StoreFribbItems(_jsonList, _configModel);
             ToastService.ShowSuccess($"Saved  anilist entries.");
         }
         catch (Exception ex)
