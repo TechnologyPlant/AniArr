@@ -1,13 +1,14 @@
 ﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace SyncSenpai.Sonarr.Entities;
 
-public class SonarrTag : IEquatable<SonarrTag>
+public class SonarrTag:IEquatable<SonarrTag>
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public int Id { get; set; }
 
-    [JsonProperty("label")]
+    [JsonPropertyName("label")]
     public string Name { get; set; } = "";
 
     public bool Equals(SonarrTag? other)

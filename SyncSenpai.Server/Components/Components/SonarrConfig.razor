@@ -5,6 +5,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IToastService ToastService
 @inject SonarrConfigRepository SonarrConfigRepository
+@inject ILogger<SonarrConfig> Logger
 
 <h2>Sonarr</h2>
 @if (_loaded)
