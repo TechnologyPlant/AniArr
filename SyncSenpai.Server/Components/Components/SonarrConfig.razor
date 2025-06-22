@@ -19,26 +19,65 @@
         <span>Sonarr Api Key:</span>
         <InputText @bind-Value="_sonarrConfig.SonarrApiKey" @bind-Value:after="() => _sonarrModified = true" />
     </div>
+
     <div>
-        <button @onclick="@TestSonarr">Test</button>
-    </div>
-    @if (_sonarrConnected)
-    {
-        <InputSelect TValue="AnimeDistinguisher" @bind-Value="@_sonarrConfig.AnimeDistinguisher" @bind-Value:after="DistinguisherChanged">
-            <option value="@AnimeDistinguisher.Undefined">Undefined</option>
-            <option value="@AnimeDistinguisher.Tag">Tag</option>
-            <option value="@AnimeDistinguisher.Directory">Directory</option>
-        </InputSelect>
-        if (_sonarrConfig.AnimeDistinguisher == AnimeDistinguisher.Tag)
+        <span>Quality Profile: </span>
+        @if (_sonarrConfig.QualityProfiles.Count == 0)
         {
-            <InputSelect TValue="SonarrTag" @bind-Value="@_sonarrConfig.SonarrTag">
-                @foreach (var tag in _tags)
+            <span>Test connection to load options.</span>
+        }
+        else
+        {
+            <InputSelect TValue="SyncSenpai.Sonarr.Entities.SonarrConfig.QualityProfile" @bind-Value=@_sonarrConfig.ActiveQualityProfile>
+
+                @foreach (var profile in _sonarrConfig.QualityProfiles)
+                {
+                    <option value="profile">@profile.Name</option>
+                }
+            </InputSelect>
+        }
+    </div>
+
+    <div>
+        <span>Root Folder: </span>
+        @if (_sonarrConfig.RootFolders.Count == 0)
+        {
+            <span>Test connection to load options.</span>
+        }
+        else
+        {
+            <InputSelect TValue="SyncSenpai.Sonarr.Entities.SonarrConfig.RootFolder" @bind-Value =@_sonarrConfig.ActiveRootFolder>
+
+                @foreach (var folder in _sonarrConfig.RootFolders)
+                {
+                    <option value="folder">@folder.Name</option>
+                }
+            </InputSelect>
+        }
+    </div>
+
+    <div>
+        <span>Tag Identifier: </span>
+        @if (_sonarrConfig.SonarrTags.Count == 0)
+        {
+            <span>Test connection to load options.</span>
+        }
+        else
+        {
+            <InputSelect TValue="SyncSenpai.Sonarr.Entities.SonarrConfig.SonarrTag" @bind-Value=_sonarrConfig.ActiveSonarrTag>
+
+                @foreach (var tag in _sonarrConfig.SonarrTags)
                 {
                     <option value="tag">@tag.Name</option>
                 }
             </InputSelect>
         }
-    }
+
+    </div>
+    <div>
+        <button @onclick="@TestSonarr">Test</button>
+        <button @onclick="@SaveConfig">Save</button>
+    </div>
     <br />
 }
 
@@ -58,6 +97,12 @@
         await base.OnInitializedAsync();
     }
 
+    private async Task SaveConfig()
+    {
+        await SonarrConfigRepository.StoreConfigAsync(_sonarrConfig);
+
+        ToastService.ShowSuccess("Sonarr Configuration Saved");
+    }
     private async Task TestSonarr()
     {
         using var client = HttpClientFactory.CreateClient();
@@ -66,6 +111,11 @@
         {
             client.BaseAddress = new($"{_sonarrConfig.SonarrUrl}");
             client.DefaultRequestHeaders.Add("X-Api-Key", _sonarrConfig.SonarrApiKey);
+
+            await LoadTags(client);
+            await LoadQualityProfiles(client);
+            await LoadRootFolders(client);
+
             var result = await client.GetAsync("/api");
             if (result.IsSuccessStatusCode)
             {
@@ -86,7 +136,7 @@
             _sonarrConnected = false;
         }
     }
-    private List<SonarrTag> _tags = [];
+    private List<SyncSenpai.Sonarr.Entities.SonarrConfig.SonarrTag> _tags = [];
     private List<string> _directories = [];
     private async Task DistinguisherChanged()
     {
@@ -94,55 +144,108 @@
         client.BaseAddress = new($"{_sonarrConfig.SonarrUrl}");
         client.DefaultRequestHeaders.Add("X-Api-Key", _sonarrConfig.SonarrApiKey);
 
-        if (_sonarrConfig.AnimeDistinguisher == AnimeDistinguisher.Tag)
-        {
-            var tags = await client.GetAsync("/api/v3/tag");
+        await LoadTags(client);
+        await LoadQualityProfiles(client);
+        await LoadRootFolders(client);
 
-            if (tags.IsSuccessStatusCode)
+
+    }
+    private async Task LoadTags(HttpClient client)
+    {
+        var tags = await client.GetAsync("/api/v3/tag");
+
+        if (tags.IsSuccessStatusCode)
+        {
+            var contentStream = await tags.Content.ReadAsStreamAsync();
+            var deserializedTags = await JsonSerializer.DeserializeAsync<List<SyncSenpai.Sonarr.Entities.SonarrConfig.SonarrTag>>(contentStream);
+            if (deserializedTags is null)
             {
-                var contentStream = await tags.Content.ReadAsStreamAsync();
-                var deserializedTags = await JsonSerializer.DeserializeAsync<List<SonarrTag>>(contentStream);
-                if (deserializedTags is null)
+                ToastService.ShowError("Failed deserialization of tags from sonarr.");
+            }
+            else
+            {
+                _sonarrConfig.SonarrTags = deserializedTags;
+                if (_sonarrConfig.SonarrTags.Count > 0)
                 {
-                    ToastService.ShowError("Failed deserialization of tags from sonarr.");
-                }
-                else
-                {
-                    _tags = deserializedTags;
                     ToastService.ShowSuccess($"Loaded {_tags.Count} tags from Sonarr.");
                 }
+                else
+                {
+                    _sonarrConfig.SonarrTags.Add(new() { Id = -1, Name = "Add an identifying tag in Sonarr and reconnect." });
+                    ToastService.ShowError($"No Tags loaded from Sonarr.{Environment.NewLine}Add tags in Sonarr and reconnect.");
+                }
+            }
+        }
+        else
+        {
+            ToastService.ShowError("Failed call to get tags from Sonarr.");
+        }
+    }
+    private async Task LoadQualityProfiles(HttpClient client)
+    {
+        var response = await client.GetAsync("/api/v3/qualityprofile");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseContent = await response.Content.ReadAsStreamAsync();
+            var deserialized = await JsonSerializer.DeserializeAsync<List<SyncSenpai.Sonarr.Entities.SonarrConfig.QualityProfile>>(responseContent);
+            if (deserialized is null)
+            {
+                ToastService.ShowError("Failed deserialization of quality profiles from sonarr.");
             }
             else
             {
-                ToastService.ShowError("Failed call to get tags from Sonarr.");
-            }
-        }
-        else if (_sonarrConfig.AnimeDistinguisher == AnimeDistinguisher.Directory)
-        {
-            var directories = await client.GetAsync("/api/v3/filesystem");
-            if (directories.IsSuccessStatusCode)
-            {
-                var contentStream = await directories.Content.ReadAsStreamAsync();
-                var deserializedDirectories = await JsonSerializer.DeserializeAsync<List<string>>(contentStream);
-                if (deserializedDirectories is null)
+                _sonarrConfig.QualityProfiles = deserialized;
+                if (_sonarrConfig.QualityProfiles.Count > 0)
                 {
-                    ToastService.ShowError("Failed deserialization of directories from sonarr.");
+                    ToastService.ShowSuccess($"Loaded {deserialized.Count} quality profiles from Sonarr.");
                 }
                 else
                 {
-                    _directories = deserializedDirectories;
-                    ToastService.ShowSuccess($"Loaded {_directories.Count} directories from Sonarr.");
+                    _sonarrConfig.QualityProfiles.Add(new() { Id = -1, Name = "Add quality profiles in Sonarr and reconnect." });
+                    ToastService.ShowError($"No quality profiles loaded from Sonarr.{Environment.NewLine}Add quality profiles in Sonarr and reconnect.");
                 }
+            }
+        }
+        else
+        {
+            ToastService.ShowError("Failed call to get quality profiles from Sonarr.");
+        }
+    }
+    private async Task LoadRootFolders(HttpClient client)
+    {
+        var response = await client.GetAsync("/api/v3/rootfolder");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseContent = await response.Content.ReadAsStreamAsync();
+            var deserialized = await JsonSerializer.DeserializeAsync<List<SyncSenpai.Sonarr.Entities.SonarrConfig.RootFolder>>(responseContent);
+            if (deserialized is null)
+            {
+                ToastService.ShowError("Failed deserialization of root folders from sonarr.");
             }
             else
             {
-                ToastService.ShowError("Failed call to get directories from Sonarr.");
+                _sonarrConfig.RootFolders = deserialized;
+                if (_sonarrConfig.RootFolders.Count > 0)
+                {
+                    ToastService.ShowSuccess($"Loaded {deserialized.Count} root folders from Sonarr.");
+                }
+                else
+                {
+                    _sonarrConfig.RootFolders.Add(new() { Id = -1, Name = "Add root folders in Sonarr and reconnect." });
+                    ToastService.ShowError($"No root folders loaded from Sonarr.{Environment.NewLine}Add root folders in Sonarr and reconnect.");
+                }
             }
         }
+        else
+        {
+            ToastService.ShowError("Failed call to get root folders from Sonarr.");
+        }
     }
-    private void SonarrTagChanged(SonarrTag sonarrTag)
+    private void SonarrTagChanged(SyncSenpai.Sonarr.Entities.SonarrConfig.SonarrTag sonarrTag)
     {
-        _sonarrConfig.SonarrTag = sonarrTag;
+        _sonarrConfig.ActiveSonarrTag = sonarrTag;
         ToastService.ShowSuccess($"Selected tag set to {sonarrTag.Name}.");
     }
 }
