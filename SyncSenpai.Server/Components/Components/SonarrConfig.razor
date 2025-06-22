@@ -1,10 +1,12 @@
 ﻿@using SyncSenpai.Sonarr.Entities
 @using System.Text.Json
 @using SyncSenpai.Sonarr.Repositories
+@using SyncSenpai.Sonarr.Services
 
 @inject IHttpClientFactory HttpClientFactory
 @inject IToastService ToastService
 @inject SonarrConfigRepository SonarrConfigRepository
+@inject SonarrService SonarrService
 @inject ILogger<SonarrConfig> Logger
 
 <h2>Sonarr</h2>
@@ -46,7 +48,7 @@
         }
         else
         {
-            <InputSelect TValue="SyncSenpai.Sonarr.Entities.SonarrConfig.RootFolder" @bind-Value =@_sonarrConfig.ActiveRootFolder>
+            <InputSelect TValue="SyncSenpai.Sonarr.Entities.SonarrConfig.RootFolder" @bind-Value=@_sonarrConfig.ActiveRootFolder>
 
                 @foreach (var folder in _sonarrConfig.RootFolders)
                 {
@@ -152,28 +154,19 @@
     }
     private async Task LoadTags(HttpClient client)
     {
-        var tags = await client.GetAsync("/api/v3/tag");
+        var tags = await SonarrService.GetSonarrTags();
 
-        if (tags.IsSuccessStatusCode)
+        if (tags is not null)
         {
-            var contentStream = await tags.Content.ReadAsStreamAsync();
-            var deserializedTags = await JsonSerializer.DeserializeAsync<List<SyncSenpai.Sonarr.Entities.SonarrConfig.SonarrTag>>(contentStream);
-            if (deserializedTags is null)
+            _sonarrConfig.SonarrTags = tags;
+            if (_sonarrConfig.SonarrTags.Count > 0)
             {
-                ToastService.ShowError("Failed deserialization of tags from sonarr.");
+                ToastService.ShowSuccess($"Loaded {_tags.Count} tags from Sonarr.");
             }
             else
             {
-                _sonarrConfig.SonarrTags = deserializedTags;
-                if (_sonarrConfig.SonarrTags.Count > 0)
-                {
-                    ToastService.ShowSuccess($"Loaded {_tags.Count} tags from Sonarr.");
-                }
-                else
-                {
-                    _sonarrConfig.SonarrTags.Add(new() { Id = -1, Name = "Add an identifying tag in Sonarr and reconnect." });
-                    ToastService.ShowError($"No Tags loaded from Sonarr.{Environment.NewLine}Add tags in Sonarr and reconnect.");
-                }
+                _sonarrConfig.SonarrTags.Add(new() { Id = -1, Name = "Add an identifying tag in Sonarr and reconnect." });
+                ToastService.ShowError($"No Tags loaded from Sonarr.{Environment.NewLine}Add tags in Sonarr and reconnect.");
             }
         }
         else

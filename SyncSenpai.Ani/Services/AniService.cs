@@ -1,4 +1,7 @@
-﻿using SyncSenpai.Server.Entities.External.AnilistResponse.WatchList;
+﻿using Microsoft.Extensions.Logging;
+using SyncSenpai.Ani.Entities;
+using SyncSenpai.Ani.Entities.GraphQLWatchList;
+using SyncSenpai.Ani.Repositories;
 using System.Text;
 using System.Text.Json;
 
@@ -8,6 +11,7 @@ public partial class AniService : IAniService
 {
     private readonly ILogger<AniService> _logger;
     private readonly HttpClient _httpClient;
+    private readonly WatchListRepository _watchListRepository;
 
     private const string _WatchListQuery = @"query User($userName: String, $type: MediaType) 
                 { MediaListCollection( userName: $userName, type: $type) 
@@ -15,10 +19,11 @@ public partial class AniService : IAniService
 
     private const string _aniListEndpoint = "https://graphql.anilist.co";
 
-    public AniService(ILogger<AniService> logger, HttpClient httpClient)
+    public AniService(ILogger<AniService> logger, HttpClient httpClient, WatchListRepository watchListRepository)
     {
         _logger = logger;
         _httpClient = httpClient;
+        _watchListRepository = watchListRepository;
     }
 
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "{methodName}:{username}")]
@@ -47,10 +52,16 @@ public partial class AniService : IAniService
             throw;
         }
 
-        if(result is null)
+        if (result is null)
         {
             throw new InvalidOperationException();
         }
         return result;
     }
+
+    public async Task StoreAniUserAsync(AniUser aniUser)
+    {
+        await _watchListRepository.StoreAniUserAsync(aniUser);
+    }
+
 }

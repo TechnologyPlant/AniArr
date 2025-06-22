@@ -1,0 +1,68 @@
+﻿@page "/watchlistmanagement"
+@using SyncSenpai.Ani.Entities
+@using SyncSenpai.Ani.Entities.GraphQLWatchList
+@using SyncSenpai.Ani.Repositories
+@using SyncSenpai.Ani.Services
+
+@inject IConfigRepository ConfigRepository
+@inject IAniService AniService
+
+<h3>Watch List Management</h3>
+
+@if (_userConfig is not null)
+{
+    <div>
+        <span>User: @_userConfig.UserName</span>
+    </div>
+    <div>
+        <button @onclick="LoadWatchList">Get WatchList</button>
+    </div>
+    <div>
+        <button @onclick="SaveWatchList">Save WatchList</button>
+    </div>
+
+    <br />
+
+    <div>
+        @foreach (var list in _mediaLists)
+        {
+            <span>@list.Name</span>
+            <ul>
+                @foreach (var entry in list.Entries)
+                {
+                    <li>@entry.Media.Title.English</li>
+                }
+            </ul>
+        }
+    </div>
+
+}
+
+
+@code {
+
+    ConfigModel? _userConfig;
+    private List<MediaList> _mediaLists = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _userConfig = await ConfigRepository.GetConfigAsync();
+    }
+
+    private async Task LoadWatchList()
+    {
+        _mediaLists = (await AniService.GetUserWatchListAsync(_userConfig!.UserName)).Data.MediaListCollection.Lists;
+    }
+    private async Task SaveWatchList()
+    {
+        AniUser user = new()
+        {
+            WatchList = _mediaLists.Select(x => new WatchList()
+            {
+                Name = x.Name,
+                Entries = x.Entries.Select(y => new WatchListEntry() { AniListId = y.Media.Id }).ToList()
+            }).ToList()
+        };
+        await AniService.StoreAniUserAsync(user);
+    }
+}
