@@ -12,18 +12,23 @@ public partial class AniService : IAniService
     private readonly ILogger<AniService> _logger;
     private readonly HttpClient _httpClient;
     private readonly WatchListRepository _watchListRepository;
-
+    private readonly IConfigRepository _configRepository;
     private const string _WatchListQuery = @"query User($userName: String, $type: MediaType) 
                 { MediaListCollection( userName: $userName, type: $type) 
                 { lists { name entries { media { id title { english } } } status } }}";
 
     private const string _aniListEndpoint = "https://graphql.anilist.co";
 
-    public AniService(ILogger<AniService> logger, HttpClient httpClient, WatchListRepository watchListRepository)
+    public AniService(ILogger<AniService> logger, HttpClient httpClient, WatchListRepository watchListRepository, IConfigRepository configRepository)
     {
         _logger = logger;
         _httpClient = httpClient;
         _watchListRepository = watchListRepository;
+        _configRepository = configRepository;
+    }
+    public async Task<ConfigModel> GetConfigAsync()
+    {
+        return await _configRepository.GetConfigAsync();
     }
 
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "{methodName}:{username}")]
@@ -62,6 +67,16 @@ public partial class AniService : IAniService
     public async Task StoreAniUserAsync(AniUser aniUser)
     {
         await _watchListRepository.StoreAniUserAsync(aniUser);
+    }
+
+    public async Task<int> GetTvDbIdByAniListId(int aniListId)
+    {
+        return await _configRepository.GetTvDbIdByAniListId(aniListId);
+    }
+
+    public async Task<List<WatchListEntry>> GetPendingEntriesAsync()
+    {
+        return await _watchListRepository.GetPendingEntriesAsync();
     }
 
 }

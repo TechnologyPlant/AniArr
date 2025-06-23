@@ -16,5 +16,6 @@ public record WatchListEntry
 {
     [Identity]
     public int AniListId { get; set; }
+    public string AniListTitle { get; set; } = "";
     public int TvDbId { get; set; }
 }

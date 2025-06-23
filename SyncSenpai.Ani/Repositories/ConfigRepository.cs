@@ -47,5 +47,11 @@ namespace SyncSenpai.Ani.Repositories
                 throw;
             }
         }
+        public async Task<int> GetTvDbIdByAniListId(int anilistId)
+        {
+            await using var session = _documentStore.LightweightSession();
+            var model = await session.Query<FribbAniListItem>().SingleOrDefaultAsync(x => x.AniListId == anilistId);
+            return model?.TvdbId ?? 0;
+        }
     }
 }

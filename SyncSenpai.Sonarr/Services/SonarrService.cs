@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SyncSenpai.Sonarr.Entities;
 using SyncSenpai.Sonarr.Repositories;
+using System.Text;
 using System.Text.Json;
 
 namespace SyncSenpai.Sonarr.Services;
@@ -18,7 +19,7 @@ public class SonarrService
         _sonarrConfigRepository = sonarrConfigRepository;
     }
 
-    public void SetupClient(SonarrConfig sonarrConfig)
+    private void SetupClient(SonarrConfig sonarrConfig)
     {
         _httpClient.BaseAddress = new($"{sonarrConfig.SonarrUrl}");
         _httpClient.DefaultRequestHeaders.Add("X-Api-Key", sonarrConfig.SonarrApiKey);
@@ -67,5 +68,16 @@ public class SonarrService
         }
 
         return null;
+    }
+
+    public async Task<bool> RequestSeries(SonarrRequest request)
+    {
+        var sonarrConfig = await _sonarrConfigRepository.GetConfigAsync();
+        SetupClient(sonarrConfig);
+
+        var content = new StringContent(request.ToPostRequestBody(), Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync($"/api/v3/series", content);
+
+        return response.IsSuccessStatusCode;
     }
 }

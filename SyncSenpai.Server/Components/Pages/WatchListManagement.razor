@@ -56,13 +56,23 @@
     private async Task SaveWatchList()
     {
         AniUser user = new()
-        {
-            WatchList = _mediaLists.Select(x => new WatchList()
             {
-                Name = x.Name,
-                Entries = x.Entries.Select(y => new WatchListEntry() { AniListId = y.Media.Id }).ToList()
-            }).ToList()
-        };
+                WatchList = _mediaLists.Select(x => new WatchList()
+                {
+                    Name = x.Name,
+                    Entries = x.Entries.Select(y => new WatchListEntry() { AniListId = y.Media.Id, AniListTitle = y.Media.Title.English }).ToList()
+                }).ToList()
+            };
+
+        List<Task> tasks = [];
+        tasks.AddRange(user.WatchList.SelectMany(x => x.Entries.Select(y => GetTvDbId(y))));
+        await Task.WhenAll(tasks);
+
         await AniService.StoreAniUserAsync(user);
+    }
+
+    private async Task GetTvDbId(WatchListEntry watchListEntry)
+    {
+        watchListEntry.TvDbId = await AniService.GetTvDbIdByAniListId(watchListEntry.AniListId);
     }
 }
