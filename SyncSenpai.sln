@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncSenpai.Sonarr", "SyncSe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncSenpai.BlazorServer", "SyncSenpai.BlazorServer\SyncSenpai.BlazorServer.csproj", "{C4429069-8CBE-88B8-34D0-FC6C37627C9B}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "syncsenpai.client", "syncsenpai.client\syncsenpai.client.esproj", "{7EF88F69-7700-6E53-FD9B-ABC9A7432E20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncSenpai.Server", "SyncSenpai.Server\SyncSenpai.Server.csproj", "{EB6D2102-F6C1-46F2-9125-A2BA6CF55822}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,16 @@ Global
 		{C4429069-8CBE-88B8-34D0-FC6C37627C9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4429069-8CBE-88B8-34D0-FC6C37627C9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4429069-8CBE-88B8-34D0-FC6C37627C9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EF88F69-7700-6E53-FD9B-ABC9A7432E20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EF88F69-7700-6E53-FD9B-ABC9A7432E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EF88F69-7700-6E53-FD9B-ABC9A7432E20}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7EF88F69-7700-6E53-FD9B-ABC9A7432E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EF88F69-7700-6E53-FD9B-ABC9A7432E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EF88F69-7700-6E53-FD9B-ABC9A7432E20}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{EB6D2102-F6C1-46F2-9125-A2BA6CF55822}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB6D2102-F6C1-46F2-9125-A2BA6CF55822}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB6D2102-F6C1-46F2-9125-A2BA6CF55822}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB6D2102-F6C1-46F2-9125-A2BA6CF55822}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
