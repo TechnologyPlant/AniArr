@@ -2,11 +2,11 @@ using Blazored.Toast;
 using Marten;
 using SyncSenpai.Ani.Repositories;
 using SyncSenpai.Ani.Services;
-using SyncSenpai.Server.Components;
+using SyncSenpai.BlazorServer.Components;
 using SyncSenpai.Sonarr.Repositories;
 using Weasel.Core;
 
-namespace SyncSenpai.Server
+namespace SyncSenpai.BlazorServer
 {
     public class Program
     {
