@@ -79,4 +79,13 @@ public partial class AniService : IAniService
         return await _watchListRepository.GetPendingEntriesAsync();
     }
 
+    public async Task StoreConfigAsync(ConfigModel configModel)
+    {
+        await _configRepository.StoreConfigAsync(configModel);
+    }
+
+    public async Task StoreFribbItems(List<FribbAniListItem> items, ConfigModel configModel)
+    {
+        await _configRepository.StoreFribbItems(items, configModel);
+    }
 }

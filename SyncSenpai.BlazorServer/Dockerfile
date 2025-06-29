@@ -12,19 +12,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["SyncSenpai.Server/SyncSenpai.Server.csproj", "SyncSenpai.Server/"]
-RUN dotnet restore "./SyncSenpai.Server/SyncSenpai.Server.csproj"
+COPY ["SyncSenpai.BlazorServer/SyncSenpai.BlazorServer.csproj", "SyncSenpai.BlazorServer/"]
+RUN dotnet restore "./SyncSenpai.BlazorServer/SyncSenpai.BlazorServer.csproj"
 COPY . .
-WORKDIR "/src/SyncSenpai.Server"
-RUN dotnet build "./SyncSenpai.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/SyncSenpai.BlazorServer"
+RUN dotnet build "./SyncSenpai.BlazorServer.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./SyncSenpai.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./SyncSenpai.BlazorServer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "SyncSenpai.Server.dll"]
+ENTRYPOINT ["dotnet", "SyncSenpai.BlazorServer.dll"]

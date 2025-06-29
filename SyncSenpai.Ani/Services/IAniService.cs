@@ -10,5 +10,7 @@ namespace SyncSenpai.Ani.Services
         Task<int> GetTvDbIdByAniListId(int aniListId);
         Task<Root> GetUserWatchListAsync(string username);
         Task StoreAniUserAsync(AniUser aniUser);
+        Task StoreConfigAsync(ConfigModel configModel);
+        Task StoreFribbItems(List<FribbAniListItem> items, ConfigModel configModel);
     }
 }
