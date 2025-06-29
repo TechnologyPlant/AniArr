@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import WatchList from './WatchList';
+import AniConfig from './AniConfig';
 
 function App() {
     const [forecasts, setForecasts] = useState();
@@ -32,13 +34,21 @@ function App() {
         </table>;
 
     return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
+        <>
+            <div>
+                <h1 id="tableLabel">Weather forecast</h1>
+                <p>This component demonstrates fetching data from the server.</p>
+                {contents}
+            </div>
+            <div>
+                <AniConfig />
+            </div>
+            <div>
+                <WatchList />
+            </div>
+        </>
     );
-    
+
     async function populateWeatherData() {
         const response = await fetch('weatherforecast');
         if (response.ok) {

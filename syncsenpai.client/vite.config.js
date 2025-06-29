@@ -50,7 +50,15 @@ export default defineConfig({
             '^/weatherforecast': {
                 target,
                 secure: false
-            }
+            },
+            '^/watchlist': {
+                target,
+                secure: false
+            },
+            '^/userwatchlist': {
+                target,
+                secure: false
+            },
         },
         port: parseInt(env.DEV_SERVER_PORT || '55832'),
         https: {

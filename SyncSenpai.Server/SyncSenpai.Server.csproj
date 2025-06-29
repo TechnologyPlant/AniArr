@@ -20,9 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SyncSenpai.Ani\SyncSenpai.Ani.csproj" />
     <ProjectReference Include="..\syncsenpai.client\syncsenpai.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\SyncSenpai.Sonarr\SyncSenpai.Sonarr.csproj" />
   </ItemGroup>
 
 </Project>
