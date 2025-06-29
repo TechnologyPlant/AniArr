@@ -4,7 +4,7 @@ using SyncSenpai.Ani.Entities;
 
 namespace SyncSenpai.Ani.Repositories
 {
-    public class ConfigRepository : IConfigRepository
+    public class ConfigRepository
     {
         private readonly IDocumentStore _documentStore;
         private readonly ILogger<ConfigRepository> _logger;

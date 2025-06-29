@@ -12,14 +12,14 @@ public partial class AniService : IAniService
     private readonly ILogger<AniService> _logger;
     private readonly HttpClient _httpClient;
     private readonly WatchListRepository _watchListRepository;
-    private readonly IConfigRepository _configRepository;
+    private readonly ConfigRepository _configRepository;
     private const string _WatchListQuery = @"query User($userName: String, $type: MediaType) 
                 { MediaListCollection( userName: $userName, type: $type) 
                 { lists { name entries { media { id title { english } } } status } }}";
 
     private const string _aniListEndpoint = "https://graphql.anilist.co";
 
-    public AniService(ILogger<AniService> logger, HttpClient httpClient, WatchListRepository watchListRepository, IConfigRepository configRepository)
+    public AniService(ILogger<AniService> logger, HttpClient httpClient, WatchListRepository watchListRepository, ConfigRepository configRepository)
     {
         _logger = logger;
         _httpClient = httpClient;

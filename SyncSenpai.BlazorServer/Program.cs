@@ -50,9 +50,10 @@ namespace SyncSenpai.BlazorServer
 
             builder.Services.AddHttpClient();
             builder.Services.AddScoped<AniService>();
+            builder.Services.AddScoped<WatchListRepository>();
             builder.Services.AddScoped<SonarrConfigRepository>();
 
-            builder.Services.AddScoped<IConfigRepository, ConfigRepository>();
+            builder.Services.AddScoped<ConfigRepository>();
             builder.Services.AddScoped<IAniService, AniService>();
 
             var app = builder.Build();

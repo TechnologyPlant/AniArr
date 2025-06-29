@@ -4,7 +4,6 @@
 @using SyncSenpai.Ani.Repositories
 @using SyncSenpai.Ani.Services
 
-@inject IConfigRepository ConfigRepository
 @inject IAniService AniService
 
 <h3>Watch List Management</h3>
@@ -46,7 +45,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _userConfig = await ConfigRepository.GetConfigAsync();
+        _userConfig = await AniService.GetConfigAsync();
     }
 
     private async Task LoadWatchList()
