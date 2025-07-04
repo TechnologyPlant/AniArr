@@ -59,6 +59,10 @@ export default defineConfig({
                 target,
                 secure: false
             },
+            '^/AnilistConfig': {
+                target,
+                secure: false
+            },
         },
         port: parseInt(env.DEV_SERVER_PORT || '55832'),
         https: {

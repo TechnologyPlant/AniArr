@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NetTopologySuite.Index.HPRtree;
 using SyncSenpai.Ani.Entities;
 using SyncSenpai.Ani.Entities.GraphQLWatchList;
 using SyncSenpai.Ani.Repositories;
@@ -87,5 +88,10 @@ public partial class AniService : IAniService
     public async Task StoreFribbItems(List<FribbAniListItem> items, ConfigModel configModel)
     {
         await _configRepository.StoreFribbItems(items, configModel);
+    }
+
+    public async Task SetAniListUserNameAsync(string username)
+    {
+        await _configRepository.SetAniListUserNameAsync(username);
     }
 }

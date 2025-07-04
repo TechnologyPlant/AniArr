@@ -4,8 +4,9 @@ import Sidebar from './Components/Sidebar';
 import './App.css'
 
 import Home from './Pages/Home';
-import AniConfig from './Pages/AniConfig';
+import AnilistWatchlist from './Pages/AnilistWatchlist';
 import WatchList from './Pages/WatchList';
+import Configuration from './Pages/Configuration';
 
 function App() {
     return (
@@ -17,8 +18,9 @@ function App() {
                 <div className='main-content'>
                     <Routes>
                         <Route path="/" element={<Home />} />
-                        <Route path="/aniconfig" element={<AniConfig />} />
+                        <Route path="/anilistWatchlist" element={<AnilistWatchlist />} />
                         <Route path="/watchlist" element={<WatchList />} />
+                        <Route path="/configuration" element={<Configuration />} />
                     </Routes>
                 </div>
             </div>

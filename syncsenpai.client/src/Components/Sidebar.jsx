@@ -7,8 +7,9 @@ const Sidebar = () => {
             <h2>My App</h2>
             <ul>
                 <li><Link to="/">Home</Link></li>
-                <li><Link to="/aniconfig">AniConfig</Link></li>
+                <li><Link to="/anilistWatchlist">Anilist Watchlist</Link></li>
                 <li><Link to="/watchlist">WatchList</Link></li>
+                <li><Link to="/configuration">Configuration</Link></li>
             </ul>
         </div>
     );

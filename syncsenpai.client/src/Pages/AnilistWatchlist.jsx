@@ -3,36 +3,27 @@ import '../App.css';
 import React from 'react';
 
 
-export default function AniConfig() {
+export default function AnilistWatchlist() {
 
-    const [username, setUsername] = useState('');
     const [watchList, setWatchList] = useState([]);
 
+    const LoadAnilistWatchlist = async () => {
+         await fetch('userwatchlist')
+            .then(res => res.json())
+            .then(data => setWatchList(data.data.MediaListCollection.lists))
+    }
 
     useEffect(() => {
-        const delayDebounce = setTimeout(() => {
-            if (username.trim() !== '') {
-                fetch(`userwatchlist/${username}`)
-                    .then(res =>res.json())
-                    .then(data => setWatchList(data.data.MediaListCollection.lists))
-                    .catch(err => console.error('Fetch error:', err));
-            } else {
-                setWatchList([]);
-            }
-        }, 500);
-
-        return () => clearTimeout(delayDebounce);
-    }, [username]);
+        return () => LoadAnilistWatchlist();
+    }, []);
 
     return (
         <div>
+            <h2>Anilist Watchlist</h2>
             <div>
-                <input
-                    type="text"
-                    onChange={(e) => setUsername(e.target.value)}
-                    value={username}
-                    placeholder="Set anilist username"
-                />
+                <button
+                    onClick={() => LoadAnilistWatchlist()}
+                >Refresh</button>
             </div>
             <div>
                 {watchList?.length > 0 ?
@@ -48,7 +39,7 @@ export default function AniConfig() {
                                 </ul>
                             </div>
                         ))
-                    ): (<p>Loading or no items available.</p>)}
+                    ) : (<p>Loading or no items available.</p>)}
             </div>
         </div>
     );

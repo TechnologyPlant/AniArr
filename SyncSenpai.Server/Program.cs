@@ -91,6 +91,27 @@ app.MapGet("/userwatchlist/{userName}", async ([FromRoute] string userName, [Fro
 })
     .WithName("GetUserWatchList");
 
+app.MapGet("/userwatchlist", async ([FromServices] AniService aniService) =>
+{
+    var config = await aniService.GetConfigAsync();
+    return Results.Ok(await aniService.GetUserWatchListAsync(config.UserName));
+});
+
+app.MapPatch("/AnilistConfig", async ([FromBody] string username, [FromServices] AniService aniService) =>
+{
+    if (String.IsNullOrEmpty(username))
+        return Results.BadRequest();
+
+    await aniService.SetAniListUserNameAsync(username);
+    return Results.Ok();
+});
+
+app.MapGet("/AnilistConfig", async ([FromServices] AniService aniService) =>
+{
+    var config = await aniService.GetConfigAsync();
+    return Results.Ok(config);
+});
+
 app.MapFallbackToFile("/index.html");
 
 app.Run();

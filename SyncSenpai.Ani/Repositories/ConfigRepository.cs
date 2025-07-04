@@ -53,5 +53,12 @@ namespace SyncSenpai.Ani.Repositories
             var model = await session.Query<FribbAniListItem>().SingleOrDefaultAsync(x => x.AniListId == anilistId);
             return model?.TvdbId ?? 0;
         }
+
+        public async Task SetAniListUserNameAsync(string username)
+        {
+            var config = await GetConfigAsync();
+            config.UserName = username;
+            await StoreConfigAsync(config);
+        }
     }
 }
