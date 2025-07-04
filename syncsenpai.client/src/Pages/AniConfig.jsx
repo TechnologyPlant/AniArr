@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import './App.css';
+import '../App.css';
 import React from 'react';
 
 
@@ -17,9 +17,9 @@ export default function AniConfig() {
                     .then(data => setWatchList(data.data.MediaListCollection.lists))
                     .catch(err => console.error('Fetch error:', err));
             } else {
-                setWatchList([]); // Clear results if input is empty
+                setWatchList([]);
             }
-        }, 500); // debounce to avoid too many requests
+        }, 500);
 
         return () => clearTimeout(delayDebounce);
     }, [username]);
@@ -31,7 +31,7 @@ export default function AniConfig() {
                     type="text"
                     onChange={(e) => setUsername(e.target.value)}
                     value={username}
-                    placeholder="Set anilist username'"
+                    placeholder="Set anilist username"
                 />
             </div>
             <div>
