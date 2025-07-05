@@ -2,6 +2,8 @@ using Marten;
 using Microsoft.AspNetCore.Mvc;
 using SyncSenpai.Ani.Repositories;
 using SyncSenpai.Ani.Services;
+using SyncSenpai.Server.Entities;
+using SyncSenpai.Server.Services;
 using SyncSenpai.Sonarr.Repositories;
 using Weasel.Core;
 
@@ -38,6 +40,9 @@ builder.Services.AddMarten(options =>
     }
 });
 
+builder.Services.Configure<MongoSettings>(
+    builder.Configuration.GetSection("MongoSettings"));
+
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<SonarrConfigRepository>();
@@ -45,6 +50,7 @@ builder.Services.AddScoped<ConfigRepository>();
 builder.Services.AddScoped<WatchListRepository>();
 
 builder.Services.AddScoped<AniService>();
+builder.Services.AddScoped<MongoDbService>();
 
 var app = builder.Build();
 
@@ -97,18 +103,18 @@ app.MapGet("/userwatchlist", async ([FromServices] AniService aniService) =>
     return Results.Ok(await aniService.GetUserWatchListAsync(config.UserName));
 });
 
-app.MapPatch("/AnilistConfig", async ([FromBody] string username, [FromServices] AniService aniService) =>
+app.MapPatch("/AnilistConfig", async ([FromBody] string username, [FromServices] MongoDbService mongoDbService) =>
 {
     if (String.IsNullOrEmpty(username))
         return Results.BadRequest();
 
-    await aniService.SetAniListUserNameAsync(username);
+    await mongoDbService.SetAniListUserNameAsync(username);
     return Results.Ok();
 });
 
-app.MapGet("/AnilistConfig", async ([FromServices] AniService aniService) =>
+app.MapGet("/AnilistConfig", async ([FromServices] MongoDbService mongoDbService) =>
 {
-    var config = await aniService.GetConfigAsync();
+    var config = await mongoDbService.GetConfigAsync();
     return Results.Ok(config);
 });
 

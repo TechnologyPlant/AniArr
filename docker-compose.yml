@@ -19,11 +19,27 @@ services:
       - postgres
     environment:
       - CONNECTION_STRING=host=${POSTGRES_HOST};port=${POSTGRES_PORT};database=${POSTGRES_DB};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD}
+      - MONGOSETTINGS__USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGOSETTINGS__PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - mynetwork
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "${MONGO_PORT}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
     networks:
       - mynetwork
 
 volumes:
   postgres-data:
+  mongodb_data:
 
 networks:
   mynetwork:
