@@ -59,7 +59,15 @@ export default defineConfig({
                 target,
                 secure: false
             },
+            '^/userwatchlistupdate': {
+                target,
+                secure: false
+            },
             '^/AnilistConfig': {
+                target,
+                secure: false
+            },
+            '^/FribbList': {
                 target,
                 secure: false
             },

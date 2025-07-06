@@ -6,6 +6,7 @@ import './App.css'
 import Home from './Pages/Home';
 import AnilistWatchlist from './Pages/AnilistWatchlist';
 import WatchList from './Pages/WatchList';
+import WatchlistUpdate from './Pages/WatchlistUpdate';
 import Configuration from './Pages/Configuration';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
                         <Route path="/anilistWatchlist" element={<AnilistWatchlist />} />
                         <Route path="/watchlist" element={<WatchList />} />
                         <Route path="/configuration" element={<Configuration />} />
+                        <Route path="/watchlistUpdate" element={<WatchlistUpdate />} />
                     </Routes>
                 </div>
             </div>

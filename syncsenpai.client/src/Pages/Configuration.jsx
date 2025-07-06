@@ -1,62 +1,11 @@
-import { useEffect, useState } from 'react';
-import '../App.css';
-import React from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import AnilistConfiguration from '../Components/AnilistConfiguration';
+import FribbListConfiguration from '../Components/FribbListConfiguration';
 
 export default function Configuration() {
-
-    const [username, setUsername] = useState('');
-
-    const saveUsername = async () => {
-        const response = await fetch('AnilistConfig', {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(username)
-        });
-
-        if (response.ok) {
-            toast('Saved Anilist username');
-        }
-        else {
-            toast('Failed to Anilist username');
-        }
-    }
-
-
-    useEffect(() => {
-        const getUsername = async () => {
-            await fetch('AnilistConfig')
-                .then(res => res.json())
-                .then(config => setUsername(config.userName))
-        }
-
-        getUsername();
-        console.log('i fire once');
-    }, [])
-
     return (
         <div>
-            <ToastContainer
-            position="bottom-right"
-            />
-            <div>
-            <h2>Anilist Configuration</h2>
-            </div>
-            <div>
-                <input
-                    type="text"
-                    onChange={(e) => setUsername(e.target.value)}
-                    value={username}
-                    placeholder="Set anilist username"
-                />
-            </div>
-            <div>
-                <button
-                    onClick={()=>saveUsername()}
-                >Save user</button>
-            </div>
+            <AnilistConfiguration />
+            <FribbListConfiguration/>
         </div>
     );
 }

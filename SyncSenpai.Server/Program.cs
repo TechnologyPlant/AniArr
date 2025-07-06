@@ -2,7 +2,6 @@ using Marten;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Console;
 using SyncSenpai.Ani.Repositories;
-using SyncSenpai.Ani.Services;
 using SyncSenpai.Server.Entities;
 using SyncSenpai.Server.Services;
 using SyncSenpai.Sonarr.Repositories;
@@ -70,6 +69,9 @@ app.UseDefaultFiles();
 
 app.MapStaticAssets();
 
+app.UseRouting();
+app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -97,11 +99,11 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-app.MapGet("/watchlist", async ([FromServices] AniService aniService) =>
-{
-    return Results.Ok(await aniService.GetPendingEntriesAsync());
-})
-.WithName("GetWatchList");
+//app.MapGet("/watchlist", async ([FromServices] AniService aniService) =>
+//{
+//    return Results.Ok(await aniService.GetPendingEntriesAsync());
+//})
+//.WithName("GetWatchList");
 
 app.MapGet("/userwatchlist/{userName}", async ([FromRoute] string userName, [FromServices] AniService aniService) =>
 {
@@ -109,10 +111,16 @@ app.MapGet("/userwatchlist/{userName}", async ([FromRoute] string userName, [Fro
 })
     .WithName("GetUserWatchList");
 
-app.MapGet("/userwatchlist", async ([FromServices] AniService aniService) =>
+app.MapGet("/userwatchlist", async ([FromServices] AniService aniService, [FromServices] MongoDbService mongoDbServicee) =>
 {
-    var config = await aniService.GetConfigAsync();
+    var config = await mongoDbServicee.GetConfigAsync();
     return Results.Ok(await aniService.GetUserWatchListAsync(config.UserName));
+});
+
+app.MapGet("/userwatchlistupdate", async ([FromServices] AniService aniService, [FromServices] MongoDbService mongoDbService) =>
+{
+    var config = await mongoDbService.GetConfigAsync();
+    return Results.Ok(await mongoDbService.GetUpdatedWatchlistEntries());
 });
 
 app.MapPatch("/AnilistConfig", async ([FromBody] string username, [FromServices] MongoDbService mongoDbService) =>
@@ -128,6 +136,22 @@ app.MapGet("/AnilistConfig", async ([FromServices] MongoDbService mongoDbService
 {
     var config = await mongoDbService.GetConfigAsync();
     return Results.Ok(config);
+});
+
+app.MapPost("/FribbList", async ([FromServices] MongoDbService mongoDbService, HttpRequest request) =>
+{
+    try
+    {
+        var form = await request.ReadFormAsync();
+        var file = form.Files["file"]; ;
+        await mongoDbService.StoreFribbItems(file);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex);
+    }
+
+    return Results.Ok();
 });
 
 app.MapFallbackToFile("/index.html");
