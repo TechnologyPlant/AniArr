@@ -1,5 +1,6 @@
 using Marten;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Console;
 using SyncSenpai.Ani.Repositories;
 using SyncSenpai.Ani.Services;
 using SyncSenpai.Server.Entities;
@@ -8,6 +9,10 @@ using SyncSenpai.Sonarr.Repositories;
 using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -42,6 +47,13 @@ builder.Services.AddMarten(options =>
 
 builder.Services.Configure<MongoSettings>(
     builder.Configuration.GetSection("MongoSettings"));
+
+using var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddSimpleConsole(i => i.ColorBehavior = LoggerColorBehavior.Disabled);
+});
+
+var logger = loggerFactory.CreateLogger<Program>();
 
 builder.Services.AddHttpClient();
 

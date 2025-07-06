@@ -17,10 +17,12 @@ services:
       - "5000:8080"
     depends_on:
       - postgres
+      - mongodb
     environment:
       - CONNECTION_STRING=host=${POSTGRES_HOST};port=${POSTGRES_PORT};database=${POSTGRES_DB};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD}
       - MONGOSETTINGS__USERNAME=${MONGO_INITDB_ROOT_USERNAME}
       - MONGOSETTINGS__PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGOSETTINGS__HOST=mongodb
     networks:
       - mynetwork
 
