@@ -61,6 +61,7 @@ builder.Services.AddScoped<ConfigRepository>();
 builder.Services.AddScoped<WatchListRepository>();
 
 builder.Services.AddScoped<AniService>();
+builder.Services.AddScoped<SonarrService>();
 builder.Services.AddScoped<MongoDbService>();
 
 var app = builder.Build();
@@ -138,7 +139,7 @@ app.MapGet("/AnilistConfig", async ([FromServices] MongoDbService mongoDbService
     return Results.Ok(config);
 });
 
-app.MapPost("/FribbList", async ([FromServices] MongoDbService mongoDbService, HttpRequest request) =>
+app.MapPost("/FribbList", async ([FromServices] MongoDbService mongoDbService, [FromBody] HttpRequest request) =>
 {
     try
     {
@@ -152,6 +153,19 @@ app.MapPost("/FribbList", async ([FromServices] MongoDbService mongoDbService, H
     }
 
     return Results.Ok();
+});
+
+app.MapPost("/SonarrConfig/test", async ([FromServices] SonarrService sonarrService, [FromBody] SonarrConfig request) =>
+{
+    try
+    {
+        var result = await sonarrService.TestConnection(request);
+        return result ? Results.Ok() : Results.BadRequest();
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex);
+    }
 });
 
 app.MapFallbackToFile("/index.html");
