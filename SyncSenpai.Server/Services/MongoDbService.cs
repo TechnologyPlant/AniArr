@@ -119,18 +119,27 @@ public class MongoDbService
 
         return [.. watchlistDictionary.Values];
     }
-    public async Task SaveWatchlistEntries(List<WatchlistItem> watchlistItems)
+    public async Task SaveWatchlistEntry(WatchlistItem watchlistItem)
     {
         var models = new List<WriteModel<WatchlistItem>>();
-        foreach (var doc in watchlistItems)
+        var watchlistCollection = _database.GetCollection<WatchlistItem>("watchlistItem");
+
+        var existing = await watchlistCollection.Find(x => x.TvdbId == watchlistItem.TvdbId).FirstOrDefaultAsync();
+
+        if (existing is null)
+            existing = watchlistItem;
+        else
         {
-            var filter = Builders<WatchlistItem>.Filter.Eq(d => d.TvdbId, doc.TvdbId);
-            var model = new ReplaceOneModel<WatchlistItem>(filter, doc) { IsUpsert = true };
-            models.Add(model);
+            existing.AniListItems.UnionWith(watchlistItem.AniListItems);
         }
 
-        var existingWatchlistCollection = _database.GetCollection<WatchlistItem>("watchlistItem");
-        await existingWatchlistCollection.BulkWriteAsync(models);
+        var update = Builders<WatchlistItem>.Update
+            .PushEach(x => x.AniListItems, watchlistItem.AniListItems);
+        var updateOptions = new UpdateOptions { IsUpsert = true };
+        var filter = Builders<WatchlistItem>
+            .Filter.Eq(d => d.TvdbId, watchlistItem.TvdbId);
+
+        var result = await watchlistCollection.UpdateOneAsync(filter, update, updateOptions);
     }
 
 }
