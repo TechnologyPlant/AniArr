@@ -170,7 +170,7 @@ app.MapPost("/SonarrConfig/test", async ([FromServices] SonarrService sonarrServ
             RootFolders = await sonarrService.LoadRootFolders(request)
         };
 
-        return Results.Ok(request);
+        return Results.Ok(config);
     }
     catch (Exception ex)
     {
