@@ -155,12 +155,22 @@ app.MapPost("/FribbList", async ([FromServices] MongoDbService mongoDbService, [
     return Results.Ok();
 });
 
-app.MapPost("/SonarrConfig/test", async ([FromServices] SonarrService sonarrService, [FromBody] SonarrConfig request) =>
+app.MapPost("/SonarrConfig/test", async ([FromServices] SonarrService sonarrService, [FromBody] SonarrConnectionDetails request) =>
 {
     try
     {
         var result = await sonarrService.TestConnection(request);
-        return result ? Results.Ok() : Results.BadRequest();
+        if (!result) return Results.BadRequest();
+
+        SonarrConfig config = new()
+        {
+            ConnectionDetails = request,
+            SonarrTags = await sonarrService.GetSonarrTags(request),
+            QualityProfiles = await sonarrService.LoadQualityProfiles(request),
+            RootFolders = await sonarrService.LoadRootFolders(request)
+        };
+
+        return Results.Ok(request);
     }
     catch (Exception ex)
     {

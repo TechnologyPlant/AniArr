@@ -5,9 +5,7 @@ namespace SyncSenpai.Server.Entities;
 public class SonarrConfig
 {
     public int Id { get; init; } = 1;
-    public string Host { get; set; } = "";
-    public string Port { get; set; } = "";
-    public string ApiKey { get; set; } = "";
+    public ConnectionDetails ConnectionDetails { get; set; } = new(); 
 
     public SonarrTag ActiveSonarrTag { get; set; } = new() { Id = -1, Name = "Select a tag" };
     public List<SonarrTag> SonarrTags { get; set; } = [];
@@ -17,7 +15,6 @@ public class SonarrConfig
 
     public RootFolder ActiveRootFolder { get; set; } = new() { Id = -1, Name = "Select a Root Folder" };
     public List<RootFolder> RootFolders { get; set; } = [];
-
 
     public record SonarrTag
     {
@@ -45,3 +42,10 @@ public class SonarrConfig
     }
 
 }
+    public record SonarrConnectionDetails
+    {
+    public string Host { get; set; } = "";
+    public string Port { get; set; } = "";
+    public string ApiKey { get; set; } = "";
+}
+
