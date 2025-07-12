@@ -5,7 +5,7 @@ namespace SyncSenpai.Server.Entities;
 public class SonarrConfig
 {
     public int Id { get; init; } = 1;
-    public ConnectionDetails ConnectionDetails { get; set; } = new(); 
+    public SonarrConnectionDetails ConnectionDetails { get; set; } = new(); 
 
     public SonarrTag ActiveSonarrTag { get; set; } = new() { Id = -1, Name = "Select a tag" };
     public List<SonarrTag> SonarrTags { get; set; } = [];
