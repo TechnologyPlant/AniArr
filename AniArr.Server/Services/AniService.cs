@@ -1,4 +1,6 @@
-﻿using AniArr.Server.Entities.GraphQLWatchList;
+﻿using AniArr.Ani.Entities.GraphQLWatchList;
+using AniArr.Server.Entities;
+using MongoDB.Driver;
 using System.Text;
 using System.Text.Json;
 
@@ -13,13 +15,15 @@ public partial class AniService
                 { lists { name entries { media { id title { english } } } status } }}";
 
     private const string _aniListEndpoint = "https://graphql.anilist.co";
+    private readonly MongoDbService _mongoDbService;
 
-    public AniService(ILogger<AniService> logger, HttpClient httpClient)
+    public AniService(ILogger<AniService> logger, HttpClient httpClient, MongoDbService mongoDbService)
     {
         _logger = logger;
         _httpClient = httpClient;
+        _mongoDbService = mongoDbService;
     }
-   
+
 
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "{methodName}:{username}")]
     partial void LogMethodWithUsername(string username, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "");
@@ -54,5 +58,119 @@ public partial class AniService
         return result;
     }
 
-    
+    public async Task<AnilistConfigModel> GetConfigAsync()
+    {
+        var collection = _mongoDbService.GetCollection<AnilistConfigModel>("config");
+        var config = await collection.Find(x => x.Id == "serviceConfig").FirstOrDefaultAsync();
+        return config ?? new();
+    }
+
+    public async Task SetAniListUserNameAsync(string username)
+    {
+        var filter = Builders<AnilistConfigModel>.Filter.Eq(x => x.Id, "serviceConfig");
+
+        var collection = _mongoDbService.GetCollection<AnilistConfigModel>("config");
+        var update = Builders<AnilistConfigModel>.Update
+            .Set(x => x.UserName, username);
+        var updateOptions = new UpdateOptions { IsUpsert = true };
+
+        var result = await collection.UpdateOneAsync(filter, update, updateOptions);
+    }
+
+    public async Task StoreFribbItems(IFormFile formFile)
+    {
+        try
+        {
+            using var stream = formFile.OpenReadStream();
+
+            var items = await JsonSerializer.DeserializeAsync<List<FribbAniListItem>>(stream);
+
+            var models = new List<WriteModel<FribbAniListItem>>();
+
+            if (items is null)
+                throw new InvalidCastException("Failed to deserialize file.");
+
+            foreach (var doc in items)
+            {
+                var filter = Builders<FribbAniListItem>.Filter.Eq(d => d.AniListId, doc.AniListId);
+                var model = new ReplaceOneModel<FribbAniListItem>(filter, doc) { IsUpsert = true };
+                models.Add(model);
+            }
+            var collection = _mongoDbService.GetCollection<FribbAniListItem>("fribbList");
+            await collection.BulkWriteAsync(models);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(0, ex, ex.Message);
+            throw;
+        }
+    }
+
+    public async Task<List<WatchlistItem>> GetUpdatedWatchlistEntries()
+    {
+        var config = await GetConfigAsync();
+        var watchlistEntries = await GetUserWatchListAsync(config.UserName);
+        List<AniListItem> aniListItems = [.. watchlistEntries.Data.MediaListCollection.Lists
+            .SelectMany(x => x.Entries)
+            .Select(x => new AniListItem() { AniListId = x.Media.Id, Title = x.Media.Title.English })];
+
+        Dictionary<int, WatchlistItem> watchlistDictionary = new();
+
+        var fribbCollection = _mongoDbService.GetCollection<FribbAniListItem>("fribbList");
+        foreach (var item in aniListItems)
+        {
+            var fribbItem = await fribbCollection.Find(x => x.AniListId == item.AniListId).FirstOrDefaultAsync();
+            var tvdb = fribbItem?.TvdbId ?? 0;
+
+            if (watchlistDictionary.TryGetValue(tvdb, out var watchlistItem))
+            {
+                watchlistItem.AniListItems.Add(item);
+            }
+            else
+            {
+                watchlistItem = new WatchlistItem()
+                {
+                    AniListItems = [item],
+                    Title = item.Title,
+                    TvdbId = tvdb
+                };
+                watchlistDictionary[tvdb] = watchlistItem;
+            }
+        }
+
+        var existingWatchlistCollection = _mongoDbService.GetCollection<WatchlistItem>("watchlistItem");
+
+        foreach (var item in watchlistDictionary)
+        {
+            var existingWatchlistItem = await existingWatchlistCollection.Find(x => x.TvdbId == item.Key).FirstOrDefaultAsync();
+            if (existingWatchlistItem is null) continue;
+            item.Value.AniListItems.ExceptWith(existingWatchlistItem.AniListItems);
+        }
+
+        return [.. watchlistDictionary.Values];
+    }
+    public async Task SaveWatchlistEntry(WatchlistItem watchlistItem)
+    {
+        var models = new List<WriteModel<WatchlistItem>>();
+        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>("watchlistItem");
+
+        var existing = await watchlistCollection.Find(x => x.TvdbId == watchlistItem.TvdbId).FirstOrDefaultAsync();
+
+        if (existing is null)
+            existing = watchlistItem;
+        else
+        {
+            existing.AniListItems.UnionWith(watchlistItem.AniListItems);
+        }
+
+        var update = Builders<WatchlistItem>.Update
+            .PushEach(x => x.AniListItems, watchlistItem.AniListItems);
+        var updateOptions = new UpdateOptions { IsUpsert = true };
+        var filter = Builders<WatchlistItem>
+            .Filter.Eq(d => d.TvdbId, watchlistItem.TvdbId);
+
+        var result = await watchlistCollection.UpdateOneAsync(filter, update, updateOptions);
+    }
+
 }

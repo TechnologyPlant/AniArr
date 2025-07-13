@@ -1,4 +1,5 @@
 ﻿using AniArr.Server.Entities;
+using MongoDB.Driver;
 using System.Text.Json;
 
 namespace AniArr.Server.Services;
@@ -81,11 +82,18 @@ public class SonarrService
     }
     public async Task SaveSonarrConfig(SonarrConfig sonarrConfig)
     {
-        await _mongoDbService.SaveSonarrConfig(sonarrConfig);
+        var filter = Builders<SonarrConfig>.Filter.Eq(x => x.Id, nameof(SonarrConfig));
+
+        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var replaceOptions = new ReplaceOptions { IsUpsert = true };
+
+        var result = await collection.ReplaceOneAsync(filter, sonarrConfig, replaceOptions);
     }
 
     public async Task<SonarrConfig> GetSonarrConfig()
     {
-        return await _mongoDbService.GetSonarrConfig();
+        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var config = await collection.Find(x => x.Id == nameof(SonarrConfig)).FirstOrDefaultAsync();
+        return config ?? new();
     }
 }
