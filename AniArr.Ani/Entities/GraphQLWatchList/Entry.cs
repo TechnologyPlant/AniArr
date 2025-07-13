@@ -1,9 +1,0 @@
-﻿using System.Text.Json.Serialization;
-
-namespace AniArr.Ani.Entities.GraphQLWatchList;
-
-public class Entry
-{
-    [JsonPropertyName("media")]
-    public Media Media { get; set; } = new();
-}
