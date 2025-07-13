@@ -9,7 +9,7 @@ export default function AnilistConfiguration() {
 
     const saveUsername = async () => {
         const response = await fetch('AnilistConfig', {
-            method: "PATCH",
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json"
             },

@@ -58,23 +58,23 @@ public partial class AniService
         return result;
     }
 
-    public async Task<AnilistConfigModel> GetConfigAsync()
+    public async Task<AnilistConfigModel> GetConfigAsync(CancellationToken cancellationToken)
     {
-        var collection = _mongoDbService.GetCollection<AnilistConfigModel>("config");
-        var config = await collection.Find(x => x.Id == "serviceConfig").FirstOrDefaultAsync();
+        var collection = _mongoDbService.GetCollection<AnilistConfigModel>(nameof(AnilistConfigModel));
+        var config = await collection.Find(x => x.Id == nameof(AnilistConfigModel)).FirstOrDefaultAsync(cancellationToken);
         return config ?? new();
     }
 
-    public async Task SetAniListUserNameAsync(string username)
+    public async Task SetAniListUserNameAsync(string username, CancellationToken cancellationToken)
     {
-        var filter = Builders<AnilistConfigModel>.Filter.Eq(x => x.Id, "serviceConfig");
+        var filter = Builders<AnilistConfigModel>.Filter.Eq(x => x.Id, nameof(AnilistConfigModel));
 
-        var collection = _mongoDbService.GetCollection<AnilistConfigModel>("config");
+        var collection = _mongoDbService.GetCollection<AnilistConfigModel>(nameof(AnilistConfigModel));
         var update = Builders<AnilistConfigModel>.Update
             .Set(x => x.UserName, username);
         var updateOptions = new UpdateOptions { IsUpsert = true };
 
-        var result = await collection.UpdateOneAsync(filter, update, updateOptions);
+        var result = await collection.UpdateOneAsync(filter, update, updateOptions, cancellationToken);
     }
 
     public async Task StoreFribbItems(IFormFile formFile)
@@ -109,7 +109,7 @@ public partial class AniService
 
     public async Task<List<WatchlistItem>> GetUpdatedWatchlistEntries(CancellationToken cancellationToken)
     {
-        var config = await GetConfigAsync();
+        var config = await GetConfigAsync(cancellationToken);
         var watchlistEntries = await GetUserWatchListAsync(config.UserName, cancellationToken);
         List<AniListItem> aniListItems = [.. watchlistEntries.Data.MediaListCollection.Lists
             .SelectMany(x => x.Entries)

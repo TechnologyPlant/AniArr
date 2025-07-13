@@ -1,9 +1,6 @@
 ﻿using AniArr.Server.Services;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver.Linq;
-using System.Threading.Tasks;
 
 namespace AniArr.Server.Endpoints;
 
@@ -18,7 +15,7 @@ public static class WatchlistItemEndpoints
         return group;
     }
 
-    public static async Task<IResult> GetNewWatchlistItems([FromServices] AniService aniService, CancellationToken cancellationToken = default)
+    static async Task<IResult> GetNewWatchlistItems([FromServices] AniService aniService, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -30,7 +27,7 @@ public static class WatchlistItemEndpoints
         }
     }
 
-    public static async Task<IResult> GetWatchlistItems([FromServices] AniService aniService, [FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken cancellationToken = default)
+    static async Task<IResult> GetWatchlistItems([FromServices] AniService aniService, [FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -43,7 +40,7 @@ public static class WatchlistItemEndpoints
             return Results.BadRequest(ex);
         }
     }
-    public static async Task<IResult> DeleteWatchlistItems([FromServices] AniService aniService, CancellationToken cancellationToken = default)
+    static async Task<IResult> DeleteWatchlistItems([FromServices] AniService aniService, CancellationToken cancellationToken = default)
     {
         try
         {
