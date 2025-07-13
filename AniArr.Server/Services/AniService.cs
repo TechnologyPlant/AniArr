@@ -1,4 +1,4 @@
-﻿using AniArr.Ani.Entities.GraphQLWatchList;
+﻿using AniArr.Server.Entities.GraphQLWatchList;
 using System.Text;
 using System.Text.Json;
 

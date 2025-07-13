@@ -21,11 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AniArr.Ani\AniArr.Ani.csproj" />
     <ProjectReference Include="..\aniarr.client\aniarr.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\AniArr.Sonarr\AniArr.Sonarr.csproj" />
   </ItemGroup>
 
 </Project>

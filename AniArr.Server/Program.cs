@@ -2,7 +2,6 @@ using AniArr.Server.Entities;
 using AniArr.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Console;
-using AniArr.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
