@@ -47,22 +47,6 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
-                target,
-                secure: false
-            },
-            '^/watchlist': {
-                target,
-                secure: false
-            },
-            '^/userwatchlist': {
-                target,
-                secure: false
-            },
-            '^/userwatchlistupdate': {
-                target,
-                secure: false
-            },
             '^/AnilistConfig': {
                 target,
                 secure: false
