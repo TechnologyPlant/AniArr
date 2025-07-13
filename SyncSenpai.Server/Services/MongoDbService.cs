@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using NetTopologySuite.Index.HPRtree;
 using SyncSenpai.Server.Entities;
-using System.Reflection;
 using System.Text.Json;
 
 namespace SyncSenpai.Server.Services;
@@ -142,5 +140,21 @@ public class MongoDbService
         var result = await watchlistCollection.UpdateOneAsync(filter, update, updateOptions);
     }
 
+    public async Task SaveSonarrConfig(SonarrConfig sonarrConfig)
+    {
+        var filter = Builders<SonarrConfig>.Filter.Eq(x => x.Id, nameof(SonarrConfig));
+
+        var collection = _database.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var replaceOptions = new ReplaceOptions { IsUpsert = true };
+
+        var result = await collection.ReplaceOneAsync(filter, sonarrConfig, replaceOptions);
+    }
+
+    public async Task<SonarrConfig> GetSonarrConfig()
+    {
+        var collection = _database.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var config = await collection.Find(x => x.Id == nameof(SonarrConfig)).FirstOrDefaultAsync();
+        return config ?? new();
+    }
 }
 

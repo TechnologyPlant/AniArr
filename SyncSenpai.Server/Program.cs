@@ -164,12 +164,38 @@ app.MapPost("/SonarrConfig/test", async ([FromServices] SonarrService sonarrServ
 
         SonarrConfig config = new()
         {
-            ConnectionDetails = request,
+            SonarrConnectionDetails = request,
             SonarrTags = await sonarrService.GetSonarrTags(request),
             QualityProfiles = await sonarrService.LoadQualityProfiles(request),
             RootFolders = await sonarrService.LoadRootFolders(request)
         };
 
+        return Results.Ok(config);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex);
+    }
+});
+
+app.MapPut("/SonarrConfig", async ([FromServices] SonarrService sonarrService, [FromBody] SonarrConfig request) =>
+{
+    try
+    {
+        await sonarrService.SaveSonarrConfig(request);
+        return Results.Ok();
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex);
+    }
+});
+
+app.MapGet("/SonarrConfig", async ([FromServices] SonarrService sonarrService) =>
+{
+    try
+    {
+        var config = await sonarrService.GetSonarrConfig();
         return Results.Ok(config);
     }
     catch (Exception ex)
