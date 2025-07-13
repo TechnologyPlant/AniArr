@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 
 export default function SonarrConfiguration() {
 
-    const [sonarrConfig, setSonarrConfig] = useState({
+    const [sonarrConnectionDetails, setSonarrConnectionDetails] = useState({
         host: "",
         port: "",
         apiKey: ""
@@ -28,32 +28,40 @@ export default function SonarrConfiguration() {
     });
 
     const testSonarrConfig = async () => {
-        const response = await fetch('SonarrConfig/test', {
-            method: "POST",
+        const saveConnectionDetails = await fetch('SonarrConfig/ConnectionDetails', {
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(sonarrConfig)
+            body: JSON.stringify(sonarrConnectionDetails)
         });
 
-        if (response.ok) {
-            const result = await response.json();
-            // Update the full config with the populated lists and connection details
-            setFullSonarrConfig({
-                sonarrConnectionDetails: {
-                    host: sonarrConfig.host || "",
-                    port: sonarrConfig.port || "",
-                    apiKey: sonarrConfig.apiKey || ""
-                },
-                sonarrTags: result.sonarrTags || [],
-                qualityProfiles: result.qualityProfiles || [],
-                rootFolders: result.rootFolders || [],
-                activeSonarrTag: result.activeSonarrTag || null,
-                activeQualityProfile: result.activeQualityProfile || null,
-                activeRootFolder: result.activeRootFolder || null
-            });
-            toast.success('Test success - Configuration loaded');
-            setIsConnected(true);
+        if (saveConnectionDetails.ok) {
+
+            const response = await fetch('SonarrConfig/ExternalDetails');
+            if (response.ok) {
+                const result = await response.json();
+                // Update the full config with the populated lists and connection details
+                setFullSonarrConfig({
+                    sonarrConnectionDetails: {
+                        host: result.sonarrConnectionDetails.host || "",
+                        port: result.sonarrConnectionDetails.port || "",
+                        apiKey: result.sonarrConnectionDetails.apiKey || ""
+                    },
+                    sonarrTags: result.sonarrTags || [],
+                    qualityProfiles: result.qualityProfiles || [],
+                    rootFolders: result.rootFolders || [],
+                    activeSonarrTag: result.activeSonarrTag || null,
+                    activeQualityProfile: result.activeQualityProfile || null,
+                    activeRootFolder: result.activeRootFolder || null
+                });
+                toast.success('Test success - Configuration loaded');
+                setIsConnected(true);
+            }
+            else {
+                toast.error('Test failed - Check your Sonarr settings');
+                setIsConnected(false);
+            }
         }
         else {
             toast.error('Test failed - Check your Sonarr settings');
@@ -62,7 +70,7 @@ export default function SonarrConfiguration() {
     }
 
     const saveSonarrConfig = async () => {
-        setFullSonarrConfig(prev => ({ ...prev, sonarrConnectionDetails: sonarrConfig || null }));
+        setFullSonarrConfig(prev => ({ ...prev, sonarrConnectionDetails: sonarrConnectionDetails || null }));
         const response = await fetch('SonarrConfig', {
             method: "PUT",
             headers: {
@@ -85,7 +93,7 @@ export default function SonarrConfiguration() {
                 const response = await fetch('SonarrConfig');
                 if (response.ok) {
                     const config = await response.json();
-                    setSonarrConfig(config?.sonarrConnectionDetails);
+                    setSonarrConnectionDetails(config?.sonarrConnectionDetails);
                     setFullSonarrConfig({
                         sonarrConnectionDetails: {
                             host: config?.sonarrConnectionDetails?.host || "",
@@ -112,7 +120,7 @@ export default function SonarrConfiguration() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setSonarrConfig(prev => ({ ...prev, [name]: value }));
+        setSonarrConnectionDetails(prev => ({ ...prev, [name]: value }));
         setFullSonarrConfig(prev => ({ ...prev,sonarrConnectionDetails: {...prev.sonarrConnectionDetails,[name]: value}}));
     };
 
@@ -132,9 +140,9 @@ export default function SonarrConfiguration() {
 
     // Validation function to check if all required fields are filled
     const isConnectionFormValid = () => {
-        return (sonarrConfig?.host ?? "").trim() !== "" &&
-            (sonarrConfig?.port ?? "").trim() !== "" &&
-            (sonarrConfig?.apiKey ?? "").trim() !== "";
+        return (sonarrConnectionDetails?.host ?? "").trim() !== "" &&
+            (sonarrConnectionDetails?.port ?? "").trim() !== "" &&
+            (sonarrConnectionDetails?.apiKey ?? "").trim() !== "";
     };
 
     return (
@@ -150,7 +158,7 @@ export default function SonarrConfiguration() {
                     <label>Host:</label>
                     <input
                         name="host"
-                        value={sonarrConfig?.host || ""}
+                        value={sonarrConnectionDetails?.host || ""}
                         onChange={handleChange}
                         placeholder="Host"
                         required
@@ -160,7 +168,7 @@ export default function SonarrConfiguration() {
                     <label>Port:</label>
                     <input
                         name="port"
-                        value={sonarrConfig?.port || ""}
+                        value={sonarrConnectionDetails?.port || ""}
                         onChange={handleChange}
                         placeholder="Port"
                         required
@@ -170,7 +178,7 @@ export default function SonarrConfiguration() {
                     <label>API Key:</label>
                     <input
                         name="apiKey"
-                        value={sonarrConfig?.apiKey || ""}
+                        value={sonarrConnectionDetails?.apiKey || ""}
                         onChange={handleChange}
                         placeholder="API Key"
                         required

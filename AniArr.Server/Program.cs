@@ -1,3 +1,4 @@
+using AniArr.Server.Endpoints;
 using AniArr.Server.Entities;
 using AniArr.Server.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -98,54 +99,8 @@ app.MapPost("/FribbList", async ([FromServices] AniService aniService, [FromBody
     return Results.Ok();
 });
 
-app.MapPost("/SonarrConfig/test", async ([FromServices] SonarrService sonarrService, [FromBody] SonarrConnectionDetails request) =>
-{
-    try
-    {
-        var result = await sonarrService.TestConnection(request);
-        if (!result) return Results.BadRequest();
-
-        SonarrConfig config = new()
-        {
-            SonarrConnectionDetails = request,
-            SonarrTags = await sonarrService.GetSonarrTags(request),
-            QualityProfiles = await sonarrService.LoadQualityProfiles(request),
-            RootFolders = await sonarrService.LoadRootFolders(request)
-        };
-
-        return Results.Ok(config);
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(ex);
-    }
-});
-
-app.MapPut("/SonarrConfig", async ([FromServices] SonarrService sonarrService, [FromBody] SonarrConfig request) =>
-{
-    try
-    {
-        await sonarrService.SaveSonarrConfig(request);
-        return Results.Ok();
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(ex);
-    }
-});
-
-app.MapGet("/SonarrConfig", async ([FromServices] SonarrService sonarrService) =>
-{
-    try
-    {
-        var config = await sonarrService.GetSonarrConfig();
-        return Results.Ok(config);
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(ex);
-    }
-});
+var sonarrConfigGroup = app.MapGroup("/SonarrConfig");
+sonarrConfigGroup.MapSonarrConfigGroup();
 
 app.MapFallbackToFile("/index.html");
 

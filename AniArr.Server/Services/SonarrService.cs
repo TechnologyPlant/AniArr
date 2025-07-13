@@ -26,11 +26,23 @@ public class SonarrService
         }
     }
 
-    public async Task<bool> TestConnection(SonarrConnectionDetails sonarrConfig)
+    public async Task<bool> UpdateConnectionDetails(SonarrConnectionDetails sonarrConnectionDetails)
     {
-        SetupClient(sonarrConfig);
+        SetupClient(sonarrConnectionDetails);
         var result = await _httpClient.GetAsync("/api");
-        return result.IsSuccessStatusCode;
+        if (!result.IsSuccessStatusCode) return false;
+
+        SonarrConfig config = new();
+        config.SonarrConnectionDetails = sonarrConnectionDetails;
+
+        var filter = Builders<SonarrConfig>.Filter.Eq(x => x.Id, nameof(SonarrConfig));
+        var update = Builders<SonarrConfig>.Update.Set(x => x.SonarrConnectionDetails, sonarrConnectionDetails);
+
+        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+
+        await collection.UpdateOneAsync(filter, update);
+
+        return true;
     }
     public async Task<List<SonarrConfig.SonarrTag>> GetSonarrTags(SonarrConnectionDetails sonarrConfig)
     {
