@@ -30,10 +30,6 @@ var logger = loggerFactory.CreateLogger<Program>();
 
 builder.Services.AddHttpClient();
 
-builder.Services.AddScoped<SonarrConfigRepository>();
-builder.Services.AddScoped<ConfigRepository>();
-builder.Services.AddScoped<WatchListRepository>();
-
 builder.Services.AddScoped<AniService>();
 builder.Services.AddScoped<SonarrService>();
 builder.Services.AddScoped<MongoDbService>();
