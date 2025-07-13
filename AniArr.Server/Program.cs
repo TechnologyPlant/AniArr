@@ -1,7 +1,6 @@
 using AniArr.Server.Endpoints;
 using AniArr.Server.Entities;
 using AniArr.Server.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Console;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,24 +49,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPost("/FribbList", async ([FromServices] AniService aniService, [FromBody] HttpRequest request) =>
-{
-    try
-    {
-        var form = await request.ReadFormAsync();
-        var file = form.Files["file"]; ;
-        await aniService.StoreFribbItems(file);
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(ex);
-    }
-
-    return Results.Ok();
-});
-
 var anilistConfigGroup = app.MapGroup("/AnilistConfig");
 anilistConfigGroup.MapAnilistConfigGroup();
+
+var fribbListGroup = app.MapGroup("/FribbList");
+fribbListGroup.MapFribbListGroup();
 
 var sonarrConfigGroup = app.MapGroup("/SonarrConfig");
 sonarrConfigGroup.MapSonarrConfigGroup();
