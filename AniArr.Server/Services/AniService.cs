@@ -28,7 +28,7 @@ public partial class AniService
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "{methodName}:{username}")]
     partial void LogMethodWithUsername(string username, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "");
 
-    public async Task<Root> GetUserWatchListAsync(string username)
+    public async Task<Root> GetUserWatchListAsync(string username, CancellationToken cancellationToken)
     {
         LogMethodWithUsername(username);
 
@@ -38,13 +38,13 @@ public partial class AniService
             variables = new { userName = username, type = "ANIME" }
         };
         StringContent content = new(JsonSerializer.Serialize(queryObject), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync(_aniListEndpoint, content);
+        var response = await _httpClient.PostAsync(_aniListEndpoint, content, cancellationToken);
         response.EnsureSuccessStatusCode();
         Root? result;
         try
         {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            result = JsonSerializer.Deserialize<Root>(responseContent);
+            var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+            result = await JsonSerializer.DeserializeAsync<Root>(responseContent, cancellationToken: cancellationToken);
         }
         catch (Exception)
         {
@@ -107,10 +107,10 @@ public partial class AniService
         }
     }
 
-    public async Task<List<WatchlistItem>> GetUpdatedWatchlistEntries()
+    public async Task<List<WatchlistItem>> GetUpdatedWatchlistEntries(CancellationToken cancellationToken)
     {
         var config = await GetConfigAsync();
-        var watchlistEntries = await GetUserWatchListAsync(config.UserName);
+        var watchlistEntries = await GetUserWatchListAsync(config.UserName, cancellationToken);
         List<AniListItem> aniListItems = [.. watchlistEntries.Data.MediaListCollection.Lists
             .SelectMany(x => x.Entries)
             .Select(x => new AniListItem() { AniListId = x.Media.Id, Title = x.Media.Title.English })];
@@ -120,7 +120,7 @@ public partial class AniService
         var fribbCollection = _mongoDbService.GetCollection<FribbAniListItem>("fribbList");
         foreach (var item in aniListItems)
         {
-            var fribbItem = await fribbCollection.Find(x => x.AniListId == item.AniListId).FirstOrDefaultAsync();
+            var fribbItem = await fribbCollection.Find(x => x.AniListId == item.AniListId).FirstOrDefaultAsync(cancellationToken);
             var tvdb = fribbItem?.TvdbId ?? 0;
 
             if (watchlistDictionary.TryGetValue(tvdb, out var watchlistItem))
@@ -139,21 +139,28 @@ public partial class AniService
             }
         }
 
-        var existingWatchlistCollection = _mongoDbService.GetCollection<WatchlistItem>("watchlistItem");
+        var existingWatchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
 
         foreach (var item in watchlistDictionary)
         {
-            var existingWatchlistItem = await existingWatchlistCollection.Find(x => x.TvdbId == item.Key).FirstOrDefaultAsync();
+            var existingWatchlistItem = await existingWatchlistCollection.Find(x => x.TvdbId == item.Key).FirstOrDefaultAsync(cancellationToken);
             if (existingWatchlistItem is null) continue;
             item.Value.AniListItems.ExceptWith(existingWatchlistItem.AniListItems);
         }
 
         return [.. watchlistDictionary.Values];
     }
-    public async Task SaveWatchlistEntry(WatchlistItem watchlistItem)
+
+    public IQueryable<WatchlistItem> GetWatchlistEntries()
+    {
+        var collection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+
+        return collection.AsQueryable();
+    }
+    public async Task SaveWatchlistItem(WatchlistItem watchlistItem)
     {
         var models = new List<WriteModel<WatchlistItem>>();
-        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>("watchlistItem");
+        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
 
         var existing = await watchlistCollection.Find(x => x.TvdbId == watchlistItem.TvdbId).FirstOrDefaultAsync();
 
@@ -171,6 +178,14 @@ public partial class AniService
             .Filter.Eq(d => d.TvdbId, watchlistItem.TvdbId);
 
         var result = await watchlistCollection.UpdateOneAsync(filter, update, updateOptions);
+    }
+
+    public async Task DeleteAllWatchListItem(CancellationToken cancellationToken)
+    {
+        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+
+        var filter = Builders<WatchlistItem>.Filter.Empty;
+        await watchlistCollection.DeleteManyAsync(filter, cancellationToken);
     }
 
 }

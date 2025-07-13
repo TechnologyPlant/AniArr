@@ -50,24 +50,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/userwatchlist/{userName}", async ([FromRoute] string userName, [FromServices] AniService aniService) =>
-{
-    return Results.Ok(await aniService.GetUserWatchListAsync(userName));
-})
-    .WithName("GetUserWatchList");
-
-app.MapGet("/userwatchlist", async ([FromServices] AniService aniService) =>
-{
-    var config = await aniService.GetConfigAsync();
-    return Results.Ok(await aniService.GetUserWatchListAsync(config.UserName));
-});
-
-app.MapGet("/userwatchlistupdate", async ([FromServices] AniService aniService) =>
-{
-    var config = await aniService.GetConfigAsync();
-    return Results.Ok(await aniService.GetUpdatedWatchlistEntries());
-});
-
 app.MapPatch("/AnilistConfig", async ([FromBody] string username, [FromServices] AniService aniService) =>
 {
     if (String.IsNullOrEmpty(username))
@@ -101,6 +83,9 @@ app.MapPost("/FribbList", async ([FromServices] AniService aniService, [FromBody
 
 var sonarrConfigGroup = app.MapGroup("/SonarrConfig");
 sonarrConfigGroup.MapSonarrConfigGroup();
+
+var watchlistGroup = app.MapGroup("/WatchListItem");
+watchlistGroup.MapWatchlistGroup();
 
 app.MapFallbackToFile("/index.html");
 

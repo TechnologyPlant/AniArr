@@ -8,7 +8,7 @@ export default function WatchlistUpdate() {
     const [watchList, setWatchList] = useState([]);
 
     const LoadAnilistWatchlist = async () => {
-        await fetch('userwatchlistupdate')
+        await fetch('WatchListItem/new')
             .then(res => res.json())
             .then(data => setWatchList(data))
     }
@@ -28,15 +28,14 @@ export default function WatchlistUpdate() {
             <div>
                 {watchList?.length > 0 ?
                     (
-                        watchList.map(list => (
+                        watchList.map(watchListItem => (
                             <div>
-                                <h3 className="border-b py-2">{list.title}</h3>
+                                <span className="border-b py-2">{watchListItem.title}</span>
+
                                 <ul className="mt-4">
-                                    {
-                                        list.aniListItems.map(item => 
-                                            <li className="border-b py-2">{item.title}</li>
-                                        )
-                                    }
+                                    {watchListItem.aniListItems.map(aniListItem => (
+                                        <li className="border-b py-2">{aniListItem.title}</li>
+                                    ))}
                                 </ul>
                             </div>
                         ))

@@ -8,9 +8,9 @@ export default function AnilistWatchlist() {
     const [watchList, setWatchList] = useState([]);
 
     const LoadAnilistWatchlist = async () => {
-         await fetch('userwatchlist')
+        await fetch('WatchListItem')
             .then(res => res.json())
-            .then(data => setWatchList(data.data.MediaListCollection.lists))
+            .then(data => setWatchList(data))
     }
 
     useEffect(() => {
@@ -28,13 +28,13 @@ export default function AnilistWatchlist() {
             <div>
                 {watchList?.length > 0 ?
                     (
-                        watchList.map(list => (
+                        watchList.map(watchListItem => (
                             <div>
-                                <span className="border-b py-2">{list.name}</span>
+                                <span className="border-b py-2">{watchListItem.title}</span>
 
                                 <ul className="mt-4">
-                                    {list.entries.map(entry => (
-                                        <li className="border-b py-2">{entry.media.title.english}</li>
+                                    {watchListItem.aniListItems.map(aniListItem => (
+                                        <li className="border-b py-2">{aniListItem.title}</li>
                                     ))}
                                 </ul>
                             </div>
