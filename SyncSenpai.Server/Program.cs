@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Console;
-using SyncSenpai.Ani.Repositories;
 using SyncSenpai.Server.Entities;
 using SyncSenpai.Server.Services;
-using SyncSenpai.Sonarr.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,31 +48,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-//app.MapGet("/watchlist", async ([FromServices] AniService aniService) =>
-//{
-//    return Results.Ok(await aniService.GetPendingEntriesAsync());
-//})
-//.WithName("GetWatchList");
 
 app.MapGet("/userwatchlist/{userName}", async ([FromRoute] string userName, [FromServices] AniService aniService) =>
 {
@@ -177,8 +150,3 @@ app.MapGet("/SonarrConfig", async ([FromServices] SonarrService sonarrService) =
 app.MapFallbackToFile("/index.html");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

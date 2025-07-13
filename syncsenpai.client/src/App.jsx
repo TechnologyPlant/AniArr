@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sidebar from './Components/Sidebar';
 import './App.css'
 
-import Home from './Pages/Home';
 import AnilistWatchlist from './Pages/AnilistWatchlist';
 import WatchList from './Pages/WatchList';
 import WatchlistUpdate from './Pages/WatchlistUpdate';
@@ -18,7 +17,7 @@ function App() {
                 </div>
                 <div className='main-content'>
                     <Routes>
-                        <Route path="/" element={<Home />} />
+                        <Route path="/" element={<WatchList />} />
                         <Route path="/anilistWatchlist" element={<AnilistWatchlist />} />
                         <Route path="/watchlist" element={<WatchList />} />
                         <Route path="/configuration" element={<Configuration />} />
