@@ -55,40 +55,40 @@ app.MapGet("/userwatchlist/{userName}", async ([FromRoute] string userName, [Fro
 })
     .WithName("GetUserWatchList");
 
-app.MapGet("/userwatchlist", async ([FromServices] AniService aniService, [FromServices] MongoDbService mongoDbServicee) =>
+app.MapGet("/userwatchlist", async ([FromServices] AniService aniService) =>
 {
-    var config = await mongoDbServicee.GetConfigAsync();
+    var config = await aniService.GetConfigAsync();
     return Results.Ok(await aniService.GetUserWatchListAsync(config.UserName));
 });
 
-app.MapGet("/userwatchlistupdate", async ([FromServices] AniService aniService, [FromServices] MongoDbService mongoDbService) =>
+app.MapGet("/userwatchlistupdate", async ([FromServices] AniService aniService) =>
 {
-    var config = await mongoDbService.GetConfigAsync();
-    return Results.Ok(await mongoDbService.GetUpdatedWatchlistEntries());
+    var config = await aniService.GetConfigAsync();
+    return Results.Ok(await aniService.GetUpdatedWatchlistEntries());
 });
 
-app.MapPatch("/AnilistConfig", async ([FromBody] string username, [FromServices] MongoDbService mongoDbService) =>
+app.MapPatch("/AnilistConfig", async ([FromBody] string username, [FromServices] AniService aniService) =>
 {
     if (String.IsNullOrEmpty(username))
         return Results.BadRequest();
 
-    await mongoDbService.SetAniListUserNameAsync(username);
+    await aniService.SetAniListUserNameAsync(username);
     return Results.Ok();
 });
 
-app.MapGet("/AnilistConfig", async ([FromServices] MongoDbService mongoDbService) =>
+app.MapGet("/AnilistConfig", async ([FromServices] AniService aniService) =>
 {
-    var config = await mongoDbService.GetConfigAsync();
+    var config = await aniService.GetConfigAsync();
     return Results.Ok(config);
 });
 
-app.MapPost("/FribbList", async ([FromServices] MongoDbService mongoDbService, [FromBody] HttpRequest request) =>
+app.MapPost("/FribbList", async ([FromServices] AniService aniService, [FromBody] HttpRequest request) =>
 {
     try
     {
         var form = await request.ReadFormAsync();
         var file = form.Files["file"]; ;
-        await mongoDbService.StoreFribbItems(file);
+        await aniService.StoreFribbItems(file);
     }
     catch (Exception ex)
     {
