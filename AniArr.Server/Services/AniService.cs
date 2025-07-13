@@ -1,5 +1,5 @@
-﻿using AniArr.Ani.Entities.GraphQLWatchList;
-using AniArr.Server.Entities;
+﻿using AniArr.Server.Entities;
+using AniArr.Server.Entities.GraphQLWatchList;
 using MongoDB.Driver;
 using System.Text;
 using System.Text.Json;
