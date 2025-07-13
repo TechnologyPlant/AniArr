@@ -3,10 +3,9 @@
 @using SyncSenpai.Ani.Entities.GraphQLWatchList
 @using SyncSenpai.Ani.Repositories
 @using SyncSenpai.Ani.Services
-@using SyncSenpai.Server.Components.Components
 @using System.Text.Json
+@using SyncSenpai.BlazorServer.Components.Components
 
-@inject IConfigRepository ConfigRepository
 @inject IAniService AniService
 @inject IToastService ToastService
 @inject ILogger<Config> Logger
@@ -75,7 +74,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _configModel = await ConfigRepository.GetConfigAsync();
+        _configModel = await AniService.GetConfigAsync();
 
         _loaded = true;
         await base.OnInitializedAsync();
@@ -83,7 +82,7 @@
 
     private async Task SaveConfig()
     {
-        await ConfigRepository.StoreConfigAsync(_configModel);
+        await AniService.StoreConfigAsync(_configModel);
         _configModified = false;
 
         ToastService.ShowSuccess("Configuration Saved");
@@ -145,7 +144,7 @@
         if (_jsonList is null) return;
         try
         {
-            await ConfigRepository.StoreFribbItems(_jsonList, _configModel);
+            await AniService.StoreFribbItems(_jsonList, _configModel);
             ToastService.ShowSuccess($"Saved  anilist entries.");
         }
         catch (Exception ex)
