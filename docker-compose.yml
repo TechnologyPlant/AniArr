@@ -1,6 +1,6 @@
 services:
-  syncsenpai:
-    image: syncsenpaiserver
+  aniarr:
+    image: aniarrserver
     ports:
       - "5000:8080"
     depends_on:
@@ -26,7 +26,6 @@ services:
       - mynetwork
 
 volumes:
-  postgres-data:
   mongodb_data:
 
 networks:
