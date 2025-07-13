@@ -1,11 +1,9 @@
-using Marten;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Console;
 using SyncSenpai.Ani.Repositories;
 using SyncSenpai.Server.Entities;
 using SyncSenpai.Server.Services;
 using SyncSenpai.Sonarr.Repositories;
-using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,30 +17,6 @@ builder.Services.AddOpenApi();
 
 
 builder.Services.AddCors();
-
-// This is the absolute, simplest way to integrate Marten into your
-// .NET application with Marten's default configuration
-builder.Services.AddMarten(options =>
-{
-    var connString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("Postgres");
-
-    if (string.IsNullOrEmpty(connString))
-        throw new InvalidOperationException("No valid connection string found");
-
-
-    // Establish the connection string to your Marten database
-    options.Connection(connString);
-
-    // Specify that we want to use STJ as our serializer
-    options.UseSystemTextJsonForSerialization();
-
-    // If we're running in development mode, let Marten just take care
-    // of all necessary schema building and patching behind the scenes
-    if (builder.Environment.IsDevelopment())
-    {
-        options.AutoCreateSchemaObjects = AutoCreate.All;
-    }
-});
 
 builder.Services.Configure<MongoSettings>(
     builder.Configuration.GetSection("MongoSettings"));
