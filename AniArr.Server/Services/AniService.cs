@@ -148,7 +148,7 @@ public partial class AniService
             item.Value.AniListItems.ExceptWith(existingWatchlistItem.AniListItems);
         }
 
-        return [.. watchlistDictionary.Values];
+        return [.. watchlistDictionary.Values.Where(x => x.AniListItems.Count > 0)];
     }
 
     public IQueryable<WatchlistItem> GetWatchlistEntries()
