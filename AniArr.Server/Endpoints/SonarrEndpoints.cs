@@ -1,18 +1,19 @@
-﻿using AniArr.Server.Entities;
+﻿using AniArr.Server.Entities.Sonarr;
 using AniArr.Server.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AniArr.Server.Endpoints;
 
-public static class SonarrConfigEndpoints
+public static class SonarrEndpoints
 {
-    public static IEndpointRouteBuilder MapSonarrConfigGroup(this RouteGroupBuilder group)
+    public static IEndpointRouteBuilder MapSonarrGroup(this RouteGroupBuilder group)
     {
-        group.MapGet("/", GetAsync);
-        group.MapPut("/", PutAsync);
+        group.MapGet("/config", GetAsync);
+        group.MapPut("/config", PutAsync);
         group.MapPut("/ConnectionDetails", PutConnectionDetailsAsync);
         group.MapGet("/ExternalDetails", GetExternalDetails);
+        group.MapGet("/Lookup/{lookupTitle}", GetSonarrLookup);
+        group.MapPut("/Request", RequestSeries);
 
         return group;
     }
@@ -75,5 +76,29 @@ public static class SonarrConfigEndpoints
             return Results.BadRequest(ex);
         }
     }
+    static async Task<IResult> GetSonarrLookup([FromRoute] string lookupTitle, [FromServices] SonarrService sonarrService)
+    {
+        try
+        {
+            return Results.Ok(await sonarrService.LookupSeries(lookupTitle));
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(ex);
+        }
+    }
+    static async Task<IResult> RequestSeries([FromBody] SonarrRequest sonarrRequest, [FromServices] SonarrService sonarrService)
+    {
+        try
+        {
+            await sonarrService.RequestSeries(sonarrRequest);
+            return Results.Ok();
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(ex);
+        }
+    }
+
 
 }
