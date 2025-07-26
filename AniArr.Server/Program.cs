@@ -55,8 +55,8 @@ anilistConfigGroup.MapAnilistConfigGroup();
 var fribbListGroup = app.MapGroup("/FribbList");
 fribbListGroup.MapFribbListGroup();
 
-var sonarrConfigGroup = app.MapGroup("/SonarrConfig");
-sonarrConfigGroup.MapSonarrConfigGroup();
+var sonarrConfigGroup = app.MapGroup("/Sonarr");
+sonarrConfigGroup.MapSonarrGroup();
 
 var watchlistGroup = app.MapGroup("/WatchListItem");
 watchlistGroup.MapWatchlistGroup();
