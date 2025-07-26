@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Serialization;
 
-namespace AniArr.Server.Entities;
+namespace AniArr.Server.Entities.Sonarr;
 
 public class SonarrConfig
 {
