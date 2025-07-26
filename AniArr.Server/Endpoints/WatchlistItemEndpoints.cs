@@ -1,4 +1,5 @@
-﻿using AniArr.Server.Services;
+﻿using AniArr.Server.Entities;
+using AniArr.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver.Linq;
 
@@ -11,6 +12,7 @@ public static class WatchlistItemEndpoints
         group.MapGet("/new", GetNewWatchlistItems);
         group.MapGet("/", GetWatchlistItems);
         group.MapDelete("/", DeleteWatchlistItems);
+        group.MapPut("/", PutWatchlistItem);
 
         return group;
     }
@@ -45,6 +47,18 @@ public static class WatchlistItemEndpoints
         try
         {
             await aniService.DeleteAllWatchListItem(cancellationToken);
+            return Results.Ok();
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(ex);
+        }
+    }
+    static async Task<IResult> PutWatchlistItem([FromServices] AniService aniService, [FromBody] WatchlistItem watchlistItem, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await aniService.PutWatchlistItem(watchlistItem, cancellationToken);
             return Results.Ok();
         }
         catch (Exception ex)
