@@ -1,5 +1,6 @@
-﻿using AniArr.Server.Entities;
+﻿using AniArr.Server.Entities.Sonarr;
 using MongoDB.Driver;
+using System.Text;
 using System.Text.Json;
 
 namespace AniArr.Server.Services;
@@ -107,5 +108,38 @@ public class SonarrService
         var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
         var config = await collection.Find(x => x.Id == nameof(SonarrConfig)).FirstOrDefaultAsync();
         return config ?? new();
+    }
+    public async Task<SonarrLookup> LookupSeries(string lookupTitle)
+    {
+        var sonarrConfig = await GetSonarrConfig();
+        SetupClient(sonarrConfig.SonarrConnectionDetails);
+
+        var response = await _httpClient.GetAsync($"/api/v3/series/lookup?term={lookupTitle}");
+        if (response.IsSuccessStatusCode)
+        {
+            var responseContent = await response.Content.ReadAsStreamAsync();
+            var deserialized = await JsonSerializer.DeserializeAsync<List<SonarrLookup>>(responseContent);
+            if (deserialized is not null && deserialized.Count > 0)
+            {
+                return deserialized.First();
+            }
+        }
+        throw new InvalidDataException("Failed to lookup series");
+
+    }
+
+    internal async Task RequestSeries(SonarrRequest sonarrRequest)
+    {
+        var sonarrConfig = await GetSonarrConfig();
+        SetupClient(sonarrConfig.SonarrConnectionDetails);
+
+        var json = JsonSerializer.Serialize(sonarrRequest.ToPostRequestBody());
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync("/api/v3/series", content);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidDataException("Failed to lookup series");
+        }
     }
 }
