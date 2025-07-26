@@ -188,4 +188,11 @@ public partial class AniService
         await watchlistCollection.DeleteManyAsync(filter, cancellationToken);
     }
 
+    internal async Task PutWatchlistItem(WatchlistItem watchlistItem, CancellationToken cancellationToken)
+    {
+        var filter = Builders<WatchlistItem>.Filter.Eq(d => d.TvdbId, watchlistItem.TvdbId);
+        var replaceOptions = new ReplaceOptions() { IsUpsert = true };
+        var collection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+        await collection.ReplaceOneAsync(filter, watchlistItem, replaceOptions, cancellationToken);
+    }
 }
