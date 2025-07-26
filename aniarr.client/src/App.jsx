@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sidebar from './Components/Sidebar';
-import './App.css'
 
 import AnilistWatchlist from './Pages/AnilistWatchlist';
 import WatchlistUpdate from './Pages/WatchlistUpdate';
