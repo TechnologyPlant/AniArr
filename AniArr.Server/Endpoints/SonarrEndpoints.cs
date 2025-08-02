@@ -12,7 +12,8 @@ public static class SonarrEndpoints
         group.MapPut("/config", PutAsync);
         group.MapPut("/ConnectionDetails", PutConnectionDetailsAsync);
         group.MapGet("/ExternalDetails", GetExternalDetails);
-        group.MapGet("/Lookup/{lookupTitle}", GetSonarrLookup);
+        group.MapGet("/Lookup/{lookupTitle}", LookupGetByTitle);
+        group.MapGet("/Lookup/{tvdbId:int}", LookupGetByTvDbId);
         group.MapPut("/Request", RequestSeries);
 
         return group;
@@ -76,11 +77,22 @@ public static class SonarrEndpoints
             return Results.BadRequest(ex);
         }
     }
-    static async Task<IResult> GetSonarrLookup([FromRoute] string lookupTitle, [FromServices] SonarrService sonarrService)
+    static async Task<IResult> LookupGetByTitle([FromRoute] string lookupTitle, [FromServices] SonarrService sonarrService)
     {
         try
         {
-            return Results.Ok(await sonarrService.LookupSeries(lookupTitle));
+            return Results.Ok(await sonarrService.LookupGetByTitle(lookupTitle));
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(ex);
+        }
+    }
+    static async Task<IResult> LookupGetByTvDbId([FromRoute] int tvdbId, [FromServices] SonarrService sonarrService)
+    {
+        try
+        {
+            return Results.Ok(await sonarrService.LookupGetByTvDbId(tvdbId));
         }
         catch (Exception ex)
         {

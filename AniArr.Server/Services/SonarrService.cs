@@ -109,7 +109,7 @@ public class SonarrService
         var config = await collection.Find(x => x.Id == nameof(SonarrConfig)).FirstOrDefaultAsync();
         return config ?? new();
     }
-    public async Task<SonarrLookup> LookupSeries(string lookupTitle)
+    public async Task<SonarrLookup> LookupGetByTitle(string lookupTitle)
     {
         var sonarrConfig = await GetSonarrConfig();
         SetupClient(sonarrConfig.SonarrConnectionDetails);
@@ -125,7 +125,23 @@ public class SonarrService
             }
         }
         throw new InvalidDataException("Failed to lookup series");
+    }
+    public async Task<SonarrLookup> LookupGetByTvDbId(int tvdbId)
+    {
+        var sonarrConfig = await GetSonarrConfig();
+        SetupClient(sonarrConfig.SonarrConnectionDetails);
 
+        var response = await _httpClient.GetAsync($"/api/v3/series/lookup?term=tvdb:{tvdbId}&includeSeasonImages=false");
+        if (response.IsSuccessStatusCode)
+        {
+            var responseContent = await response.Content.ReadAsStreamAsync();
+            var deserialized = await JsonSerializer.DeserializeAsync<List<SonarrLookup>>(responseContent);
+            if (deserialized is not null && deserialized.Count > 0)
+            {
+                return deserialized.First();
+            }
+        }
+        throw new InvalidDataException("Failed to lookup series");
     }
 
     internal async Task RequestSeries(SonarrRequest sonarrRequest)

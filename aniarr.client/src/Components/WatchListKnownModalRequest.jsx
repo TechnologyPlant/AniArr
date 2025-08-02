@@ -79,7 +79,7 @@ const WatchListKnownModalRequest = ({
     async function fetchAdditionalData() {
         try {
             setLookingUp(true);
-            const response = await fetch(`/Sonarr/Lookup/${watchListItem.title}`);
+            const response = await fetch(`/Sonarr/Lookup/${watchListItem.tvdbId}`);
             const data = await response.json();
             setLookupDetails(data);
             console.log(data);
