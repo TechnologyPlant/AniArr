@@ -7,27 +7,44 @@ const gridContainerStyles = {
     display: 'flex',
     gap: '20px',
     flexDirection: 'row',
-    alignItems:'center',
-    textAlign:'left'
+    alignItems: 'center',
+    textAlign: 'left'
 };
 
 export default function WatchlistUpdate() {
 
-    const [watchList, setWatchList] = useState([]);
+    const [existingWatchList, setExistingWatchList] = useState([]);
+    const [newWatchList, setNewWatchList] = useState([]);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedWatchListItem, setSelectedWatchListItem] = useState('');
     async function LoadAnilistWatchlist() {
         await fetch('WatchListItem/new')
             .then(res => res.json())
-            .then(data => setWatchList(data));
+            .then(async data => {
+                setExistingWatchList([]);
+                setNewWatchList([]);
+
+                data.map(async watchListItem => {
+                    const response = await fetch(`Sonarr/Series/${watchListItem.tvdbId}`, {
+                        method: "Get",
+                    });
+                    if (response.ok) {
+                        setExistingWatchList(prev => [...prev, watchListItem]);
+                    } else {
+                        setNewWatchList(prev => [...prev, watchListItem]);
+                    }
+                })
+
+            });
     }
 
     useEffect(() => {
         return () => LoadAnilistWatchlist();
     }, []);
-    
-    function openModal(watchListItem) {
-        setSelectedWatchListItem(watchListItem);
+
+    function openModal(existingWatchListItem) {
+        setSelectedWatchListItem(existingWatchListItem);
         setIsModalOpen(true);
     }
 
@@ -46,12 +63,29 @@ export default function WatchlistUpdate() {
                     onClick={() => LoadAnilistWatchlist()}
                 >Refresh</button>
             </div>
+            <h2>Existing Sonarr Entries</h2>
             <div >
-                {watchList?.length > 0 ?
+                {existingWatchList?.length > 0 ?
                     (
-                         watchList.map(watchListItem => (
+                        existingWatchList.map(watchListItem => (
                             <div key={watchListItem.id} style={{ ...gridContainerStyles }} onClick={() => openModal(watchListItem)}>
-                            <span className="border-b py-2">{watchListItem.title}</span>
+                                <span className="border-b py-2">{watchListItem.title}</span>
+                                <ul className="mt-4">
+                                    {watchListItem.aniListItems.map(aniListItem => (
+                                        <li key={aniListItem.id} className="border-b py-2">{aniListItem.title}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))
+                    ) : (<p>Loading or no items available.</p>)}
+            </div>
+            <h2>New Sonarr Entries</h2>
+            <div >
+                {newWatchList?.length > 0 ?
+                    (
+                        newWatchList.map(watchListItem => (
+                            <div key={watchListItem.id} style={{ ...gridContainerStyles }} onClick={() => openModal(watchListItem)}>
+                                <span className="border-b py-2">{watchListItem.title}</span>
                                 <ul className="mt-4">
                                     {watchListItem.aniListItems.map(aniListItem => (
                                         <li key={aniListItem.id} className="border-b py-2">{aniListItem.title}</li>
