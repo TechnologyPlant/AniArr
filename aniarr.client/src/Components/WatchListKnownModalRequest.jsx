@@ -8,6 +8,7 @@ const WatchListKnownModalRequest = ({
     if (!isOpen) return null;
 
     const [lookingUp, setLookingUp] = useState(false);
+    const [seriesType, setSeriesType] = useState("standard");
     const [lookupDetails, setLookupDetails] = useState({
         folder: "",
         monitored: false,
@@ -55,6 +56,7 @@ const WatchListKnownModalRequest = ({
                 RootFolderPath: sonarrConfig.activeRootFolder.path,
                 tvdbId: lookupDetails.tvdbId,
                 seasons: lookupDetails.seasons,
+                seriesType: seriesType
             };
 
             const requestResponse = await fetch("Sonarr/Request", {
@@ -157,6 +159,19 @@ const WatchListKnownModalRequest = ({
                                     />
                                 </div>
                             ))}
+                        </div>
+
+                        <div>
+                            <label>Series Type:</label>
+                            <select
+                                name="seriesType"
+                                value={seriesType}
+                                onChange={(e) => setSeriesType(e.target.value)}
+                            >
+                                <option value="standard">Standard</option>
+                                <option value="daily">Daily</option>
+                                <option value="anime">Anime</option>
+                            </select>
                         </div>
                         <button onClick={acknowledge}>Acknowledge Entry</button>
                         <button onClick={request}>Submit Request</button>
