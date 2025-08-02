@@ -11,9 +11,12 @@ public class SonarrRequest : SonarrSeriesBase
     public string RootFolderPath { get; set; }
 
     [JsonPropertyName("seriesType")]
-    public string SeriesType { get; set; } = "standard";
+    public string SeriesType { get; set; }
 
-    [JsonPropertyName("languageProfileId ")]
+    /// <summary>
+    /// Outdated property, does not need to be set by user
+    /// </summary>
+    [JsonPropertyName("languageProfileId")]
     public int LanguageProfileId { get; set; } = 1;
 
 }
