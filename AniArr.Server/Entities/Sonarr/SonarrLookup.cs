@@ -10,7 +10,4 @@ public class SonarrLookup: SonarrSeriesBase
     public bool seasonFolder { get; set; }
     public bool monitored { get; set; }
     public string folder { get; set; }
-
-    [JsonPropertyName("title")]
-    public string Title { get; set; } = "";
 }

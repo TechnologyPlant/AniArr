@@ -133,7 +133,7 @@ public class SonarrService
         var sonarrConfig = await GetSonarrConfig();
         SetupClient(sonarrConfig.SonarrConnectionDetails);
 
-        var json = JsonSerializer.Serialize(sonarrRequest.ToPostRequestBody());
+        var json = JsonSerializer.Serialize(sonarrRequest);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var response = await _httpClient.PostAsync("/api/v3/series", content);
