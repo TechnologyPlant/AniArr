@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import '../App.css';
 import React from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -28,7 +27,7 @@ export default function SonarrConfiguration() {
     });
 
     const testSonarrConfig = async () => {
-        const saveConnectionDetails = await fetch('SonarrConfig/ConnectionDetails', {
+        const saveConnectionDetails = await fetch('Sonarr/ConnectionDetails', {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -38,7 +37,7 @@ export default function SonarrConfiguration() {
 
         if (saveConnectionDetails.ok) {
 
-            const response = await fetch('SonarrConfig/ExternalDetails');
+            const response = await fetch('Sonarr/ExternalDetails');
             if (response.ok) {
                 const result = await response.json();
                 // Update the full config with the populated lists and connection details
@@ -71,7 +70,7 @@ export default function SonarrConfiguration() {
 
     const saveSonarrConfig = async () => {
         setFullSonarrConfig(prev => ({ ...prev, sonarrConnectionDetails: sonarrConnectionDetails || null }));
-        const response = await fetch('SonarrConfig', {
+        const response = await fetch('Sonarr/config', {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -90,7 +89,7 @@ export default function SonarrConfiguration() {
     useEffect(() => {
         const getSonarrConfig = async () => {
             try {
-                const response = await fetch('SonarrConfig');
+                const response = await fetch('Sonarr/config');
                 if (response.ok) {
                     const config = await response.json();
                     setSonarrConnectionDetails(config?.sonarrConnectionDetails);

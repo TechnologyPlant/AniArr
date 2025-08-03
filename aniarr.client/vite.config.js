@@ -55,7 +55,7 @@ export default defineConfig({
                 target,
                 secure: false
             },
-            '^/SonarrConfig': {
+            '^/Sonarr': {
                 target,
                 secure: false
             },
