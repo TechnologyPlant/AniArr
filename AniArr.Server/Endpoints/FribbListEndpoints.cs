@@ -7,20 +7,19 @@ public static class FribbListEndpoints
 {
     public static IEndpointRouteBuilder MapFribbListGroup(this RouteGroupBuilder group)
     {
-        group.MapPut("/", PutAsync);
+        group.MapPut("/", PutAsync)
+            .DisableAntiforgery();
 
         return group;
     }
    
-    static async Task<IResult> PutAsync([FromServices] AniService aniService, [FromBody] HttpRequest request, CancellationToken cancellationToken = default)
+    static async Task<IResult> PutAsync([FromServices] AniService aniService, [FromForm] IFormFile formFile, CancellationToken cancellationToken = default)
     {
         try
         {
-            var form = await request.ReadFormAsync();
-            var file = form.Files["file"];
-            if (file is null)
+            if (formFile is null)
                 return Results.BadRequest("No file uploaded.");
-            await aniService.StoreFribbItems(file);
+            await aniService.StoreFribbItems(formFile);
         }
         catch (Exception ex)
         {

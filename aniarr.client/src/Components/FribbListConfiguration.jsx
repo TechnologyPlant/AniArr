@@ -10,11 +10,11 @@ export default function FribbListConfiguration() {
 
     const importFile = async (e) => {
         const formData = new FormData();
-        formData.append("file", fileSelected);
+        formData.append("formFile", fileSelected);
 
         try {
             const response = await fetch('FribbList', {
-                method: "POST",
+                method: "PUT",
              
                 body: formData
             });
