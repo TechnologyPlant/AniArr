@@ -18,13 +18,10 @@ public class SonarrService
         _mongoDbService = mongoDbService;
     }
 
-    private void SetupClient(SonarrConnectionDetails sonarrConfig, bool overrideConfiguration = false)
+    private void SetupClient(SonarrConnectionDetails connectionDetails)
     {
-        if (_httpClient.BaseAddress is null || overrideConfiguration)
-        {
-            _httpClient.BaseAddress = new($"{sonarrConfig.Host}:{sonarrConfig.Port}");
-            _httpClient.DefaultRequestHeaders.Add("X-Api-Key", sonarrConfig.ApiKey);
-        }
+        _httpClient.BaseAddress = new($"{connectionDetails.Host}:{connectionDetails.Port}");
+        _httpClient.DefaultRequestHeaders.Add("X-Api-Key", connectionDetails.ApiKey);
     }
 
     public async Task<bool> UpdateConnectionDetails(SonarrConnectionDetails sonarrConnectionDetails)
@@ -46,9 +43,19 @@ public class SonarrService
 
         return true;
     }
-    public async Task<List<SonarrConfig.SonarrTag>> GetSonarrTags(SonarrConnectionDetails sonarrConfig)
+    public async Task<SonarrConfig> LoadConfigFromSonarr()
     {
-        SetupClient(sonarrConfig);
+        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var sonarrConfig = (await collection.FindAsync(x => x.Id == nameof(SonarrConfig))).FirstOrDefault();
+
+        SetupClient(sonarrConfig.SonarrConnectionDetails);
+        sonarrConfig.SonarrTags = await GetSonarrTags();
+        sonarrConfig.QualityProfiles = await GetQualityProfiles();
+        sonarrConfig.RootFolders = await GetRootFolders();
+        return sonarrConfig;
+    }
+    private async Task<List<SonarrConfig.SonarrTag>> GetSonarrTags()
+    {
         var tags = await _httpClient.GetAsync("/api/v3/tag");
         if (tags.IsSuccessStatusCode)
         {
@@ -62,9 +69,8 @@ public class SonarrService
 
         throw new InvalidDataException("No Sonarr Tags to load");
     }
-    public async Task<List<SonarrConfig.QualityProfile>> LoadQualityProfiles(SonarrConnectionDetails sonarrConfig)
+    private async Task<List<SonarrConfig.QualityProfile>> GetQualityProfiles()
     {
-        SetupClient(sonarrConfig);
         var response = await _httpClient.GetAsync("/api/v3/qualityprofile");
 
         if (response.IsSuccessStatusCode)
@@ -78,9 +84,8 @@ public class SonarrService
         }
         throw new InvalidDataException("No Sonarr Quality Profiles to load");
     }
-    public async Task<List<SonarrConfig.RootFolder>> LoadRootFolders(SonarrConnectionDetails sonarrConfig)
+    private async Task<List<SonarrConfig.RootFolder>> GetRootFolders()
     {
-        SetupClient(sonarrConfig);
         var response = await _httpClient.GetAsync("/api/v3/rootfolder");
 
         if (response.IsSuccessStatusCode)

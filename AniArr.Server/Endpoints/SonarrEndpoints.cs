@@ -65,12 +65,7 @@ public static class SonarrEndpoints
     {
         try
         {
-            var config = await sonarrService.GetSonarrConfig();
-
-            config.SonarrTags = await sonarrService.GetSonarrTags(config.SonarrConnectionDetails);
-            config.QualityProfiles = await sonarrService.LoadQualityProfiles(config.SonarrConnectionDetails);
-            config.RootFolders = await sonarrService.LoadRootFolders(config.SonarrConnectionDetails);
-
+            var config = await sonarrService.LoadConfigFromSonarr();
             return Results.Ok(config);
         }
         catch (Exception ex)
