@@ -5,29 +5,35 @@ using System.Text.Json;
 
 namespace AniArr.Server.Services;
 
-public class SonarrService
+public partial class SonarrService(ILogger<SonarrService> logger, HttpClient httpClient, MongoDbService mongoDbService)
 {
-    private readonly ILogger<SonarrService> _logger;
-    private readonly HttpClient _httpClient;
-    private readonly MongoDbService _mongoDbService;
-
-    public SonarrService(ILogger<SonarrService> logger, HttpClient httpClient, MongoDbService mongoDbService)
-    {
-        _logger = logger;
-        _httpClient = httpClient;
-        _mongoDbService = mongoDbService;
-    }
-
     private void SetupClient(SonarrConnectionDetails connectionDetails)
     {
-        _httpClient.BaseAddress = new($"{connectionDetails.Host}:{connectionDetails.Port}");
-        _httpClient.DefaultRequestHeaders.Add("X-Api-Key", connectionDetails.ApiKey);
+        httpClient.BaseAddress = new($"{connectionDetails.Host}:{connectionDetails.Port}");
+        httpClient.DefaultRequestHeaders.Add("X-Api-Key", connectionDetails.ApiKey);
     }
+    #region Logging
+    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "{methodName}")]
+    partial void LogMethod([System.Runtime.CompilerServices.CallerMemberName] string methodName = "");
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "{methodName}: {lookupTitle}")]
+    partial void LogMethodWithTitle(string lookupTitle, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "");
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "{methodName}: {tvDbId}")]
+    partial void LogMethodWithTvDbId(int tvDbId, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "");
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "{methodName}: {requestJson}")]
+    partial void LogMethodRequest(string requestJson, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "");
+
+    [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "{methodName}: Error communicating with Sonarr")]
+    partial void LogException(Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "");
+    #endregion
 
     public async Task<bool> UpdateConnectionDetails(SonarrConnectionDetails sonarrConnectionDetails)
     {
+        LogMethod();
         SetupClient(sonarrConnectionDetails);
-        var result = await _httpClient.GetAsync("/api");
+        var result = await httpClient.GetAsync("/api");
         if (!result.IsSuccessStatusCode) return false;
 
         SonarrConfig config = new();
@@ -37,7 +43,7 @@ public class SonarrService
         var update = Builders<SonarrConfig>.Update.Set(x => x.SonarrConnectionDetails, sonarrConnectionDetails);
         UpdateOptions updateOptions = new() { IsUpsert = true };
 
-        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
 
         await collection.UpdateOneAsync(filter, update, updateOptions);
 
@@ -45,18 +51,28 @@ public class SonarrService
     }
     public async Task<SonarrConfig> LoadConfigFromSonarr()
     {
-        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
-        var sonarrConfig = (await collection.FindAsync(x => x.Id == nameof(SonarrConfig))).FirstOrDefault();
+        LogMethod();
+        try
+        {
+            var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+            var sonarrConfig = (await collection.FindAsync(x => x.Id == nameof(SonarrConfig))).FirstOrDefault();
 
-        SetupClient(sonarrConfig.SonarrConnectionDetails);
-        sonarrConfig.SonarrTags = await GetSonarrTags();
-        sonarrConfig.QualityProfiles = await GetQualityProfiles();
-        sonarrConfig.RootFolders = await GetRootFolders();
-        return sonarrConfig;
+            SetupClient(sonarrConfig.SonarrConnectionDetails);
+            sonarrConfig.SonarrTags = await GetSonarrTags();
+            sonarrConfig.QualityProfiles = await GetQualityProfiles();
+            sonarrConfig.RootFolders = await GetRootFolders();
+            return sonarrConfig;
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+            throw;
+        }
     }
     private async Task<List<SonarrConfig.SonarrTag>> GetSonarrTags()
     {
-        var tags = await _httpClient.GetAsync("/api/v3/tag");
+        LogMethod();
+        var tags = await httpClient.GetAsync("/api/v3/tag");
         if (tags.IsSuccessStatusCode)
         {
             var contentStream = await tags.Content.ReadAsStreamAsync();
@@ -71,7 +87,8 @@ public class SonarrService
     }
     private async Task<List<SonarrConfig.QualityProfile>> GetQualityProfiles()
     {
-        var response = await _httpClient.GetAsync("/api/v3/qualityprofile");
+        LogMethod();
+        var response = await httpClient.GetAsync("/api/v3/qualityprofile");
 
         if (response.IsSuccessStatusCode)
         {
@@ -86,7 +103,8 @@ public class SonarrService
     }
     private async Task<List<SonarrConfig.RootFolder>> GetRootFolders()
     {
-        var response = await _httpClient.GetAsync("/api/v3/rootfolder");
+        LogMethod();
+        var response = await httpClient.GetAsync("/api/v3/rootfolder");
 
         if (response.IsSuccessStatusCode)
         {
@@ -101,9 +119,10 @@ public class SonarrService
     }
     public async Task SaveSonarrConfig(SonarrConfig sonarrConfig)
     {
+        LogMethod();
         var filter = Builders<SonarrConfig>.Filter.Eq(x => x.Id, nameof(SonarrConfig));
 
-        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
 
         var result = await collection.ReplaceOneAsync(filter, sonarrConfig, replaceOptions);
@@ -111,16 +130,18 @@ public class SonarrService
 
     public async Task<SonarrConfig> GetSonarrConfig()
     {
-        var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        LogMethod();
+        var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
         var config = await collection.Find(x => x.Id == nameof(SonarrConfig)).FirstOrDefaultAsync();
         return config ?? new();
     }
     public async Task<SonarrLookup> LookupGetByTitle(string lookupTitle)
     {
+        LogMethodWithTitle(lookupTitle);
         var sonarrConfig = await GetSonarrConfig();
         SetupClient(sonarrConfig.SonarrConnectionDetails);
 
-        var response = await _httpClient.GetAsync($"/api/v3/series/lookup?term={lookupTitle}");
+        var response = await httpClient.GetAsync($"/api/v3/series/lookup?term={lookupTitle}");
         if (response.IsSuccessStatusCode)
         {
             var responseContent = await response.Content.ReadAsStreamAsync();
@@ -134,10 +155,11 @@ public class SonarrService
     }
     public async Task<SonarrLookup> LookupGetByTvDbId(int tvdbId)
     {
+        LogMethodWithTvDbId(tvdbId);
         var sonarrConfig = await GetSonarrConfig();
         SetupClient(sonarrConfig.SonarrConnectionDetails);
 
-        var response = await _httpClient.GetAsync($"/api/v3/series/lookup?term=tvdb:{tvdbId}&includeSeasonImages=false");
+        var response = await httpClient.GetAsync($"/api/v3/series/lookup?term=tvdb:{tvdbId}&includeSeasonImages=false");
         if (response.IsSuccessStatusCode)
         {
             var responseContent = await response.Content.ReadAsStreamAsync();
@@ -151,10 +173,11 @@ public class SonarrService
     }
     public async Task<SonarrLookup?> SeriesGetByTvDbId(int tvdbId)
     {
+        LogMethodWithTvDbId(tvdbId);
         var sonarrConfig = await GetSonarrConfig();
         SetupClient(sonarrConfig.SonarrConnectionDetails);
 
-        var response = await _httpClient.GetAsync($"/api/v3/series?tvdbId={tvdbId}&includeSeasonImages=false");
+        var response = await httpClient.GetAsync($"/api/v3/series?tvdbId={tvdbId}&includeSeasonImages=false");
         if (response.IsSuccessStatusCode)
         {
             var responseContent = await response.Content.ReadAsStreamAsync();
@@ -169,13 +192,14 @@ public class SonarrService
 
     internal async Task RequestSeries(SonarrRequest sonarrRequest)
     {
+        LogMethodRequest(JsonSerializer.Serialize(sonarrRequest));
         var sonarrConfig = await GetSonarrConfig();
         SetupClient(sonarrConfig.SonarrConnectionDetails);
 
         var json = JsonSerializer.Serialize(sonarrRequest);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.PostAsync("/api/v3/series", content);
+        var response = await httpClient.PostAsync("/api/v3/series", content);
         if (!response.IsSuccessStatusCode)
         {
             throw new InvalidDataException("Failed to lookup series");
