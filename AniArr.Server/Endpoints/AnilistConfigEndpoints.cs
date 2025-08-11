@@ -21,7 +21,7 @@ public static class AnilistConfigEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
 
@@ -37,7 +37,7 @@ public static class AnilistConfigEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
 }

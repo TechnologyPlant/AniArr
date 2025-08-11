@@ -12,7 +12,7 @@ public static class FribbListEndpoints
 
         return group;
     }
-   
+
     static async Task<IResult> PutAsync([FromServices] AniService aniService, [FromForm] IFormFile formFile, CancellationToken cancellationToken = default)
     {
         try
@@ -20,12 +20,11 @@ public static class FribbListEndpoints
             if (formFile is null)
                 return Results.BadRequest("No file uploaded.");
             await aniService.StoreFribbItems(formFile);
+            return Results.Ok();
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
-
-        return Results.Ok();
     }
 }

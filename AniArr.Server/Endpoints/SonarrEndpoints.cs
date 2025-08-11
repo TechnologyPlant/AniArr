@@ -30,7 +30,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
 
@@ -43,7 +43,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
 
@@ -57,7 +57,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
 
@@ -75,7 +75,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
     static async Task<IResult> LookupGetByTitle([FromRoute] string lookupTitle, [FromServices] SonarrService sonarrService)
@@ -86,7 +86,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
     static async Task<IResult> LookupGetByTvDbId([FromRoute] int tvdbId, [FromServices] SonarrService sonarrService)
@@ -97,7 +97,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
     static async Task<IResult> SeriesGetByTvDbId([FromRoute] int tvdbId, [FromServices] SonarrService sonarrService)
@@ -111,7 +111,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
     static async Task<IResult> RequestSeries([FromBody] SonarrRequest sonarrRequest, [FromServices] SonarrService sonarrService)
@@ -123,7 +123,7 @@ public static class SonarrEndpoints
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ex);
+            return Results.BadRequest(ex.Message);
         }
     }
 
