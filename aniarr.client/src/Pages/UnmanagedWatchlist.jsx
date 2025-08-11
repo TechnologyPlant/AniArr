@@ -1,17 +1,7 @@
 import { useEffect, useState } from 'react';
 import WatchListKnownModalRequest from '../Components/WatchListKnownModalRequest';
 
-
-// CSS for the grid container
-const gridContainerStyles = {
-    display: 'flex',
-    gap: '20px',
-    flexDirection: 'row',
-    alignItems: 'center',
-    textAlign: 'left'
-};
-
-export default function WatchlistUpdate() {
+export default function UnmanagedWatchlist() {
 
     const [existingWatchList, setExistingWatchList] = useState([]);
     const [newWatchList, setNewWatchList] = useState([]);
@@ -64,34 +54,38 @@ export default function WatchlistUpdate() {
                 >Refresh</button>
             </div>
             <h2>Existing Sonarr Entries</h2>
-            <div >
+            <div className="grid-container" >
                 {existingWatchList?.length > 0 ?
                     (
                         existingWatchList.map(watchListItem => (
-                            <div key={watchListItem.id} style={{ ...gridContainerStyles }} onClick={() => openModal(watchListItem)}>
-                                <span className="border-b py-2">{watchListItem.title}</span>
-                                <ul className="mt-4">
-                                    {watchListItem.aniListItems.map(aniListItem => (
-                                        <li key={aniListItem.id} className="border-b py-2">{aniListItem.title}</li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <>
+                                <div className="border-b py-2" onClick={() => openModal(watchListItem)}>{watchListItem.title}</div>
+                                <div>
+                                    <ul className="mt-4">
+                                        {watchListItem.aniListItems.map(aniListItem => (
+                                            <li key={aniListItem.id} className="border-b py-2">{aniListItem.title}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </>
                         ))
                     ) : (<p>Loading or no items available.</p>)}
             </div>
             <h2>New Sonarr Entries</h2>
-            <div >
+            <div className="grid-container">
                 {newWatchList?.length > 0 ?
                     (
                         newWatchList.map(watchListItem => (
-                            <div key={watchListItem.id} style={{ ...gridContainerStyles }} onClick={() => openModal(watchListItem)}>
-                                <span className="border-b py-2">{watchListItem.title}</span>
-                                <ul className="mt-4">
-                                    {watchListItem.aniListItems.map(aniListItem => (
-                                        <li key={aniListItem.id} className="border-b py-2">{aniListItem.title}</li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <>
+                                <div className="border-b py-2">{watchListItem.title}</div>
+                                <div>
+                                    <ul className="mt-4">
+                                        {watchListItem.aniListItems.map(aniListItem => (
+                                            <li key={aniListItem.id} className="border-b py-2">{aniListItem.title}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </>
                         ))
                     ) : (<p>Loading or no items available.</p>)}
             </div>

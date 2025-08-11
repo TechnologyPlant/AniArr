@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sidebar from './Components/Sidebar';
 
-import AnilistWatchlist from './Pages/AnilistWatchlist';
-import WatchlistUpdate from './Pages/WatchlistUpdate';
+import ManagedWatchlist from './Pages/ManagedWatchlist';
+import UnmanagedWatchlist from './Pages/UnmanagedWatchlist';
 import Configuration from './Pages/Configuration';
 
 function App() {
@@ -15,10 +15,10 @@ function App() {
                 </div>
                 <div className='main-content'>
                     <Routes>
-                        <Route path="/" element={<AnilistWatchlist />} />
-                        <Route path="/anilistWatchlist" element={<AnilistWatchlist />} />
+                        <Route path="/" element={<ManagedWatchlist />} />
+                        <Route path="/managedWatchlist" element={<ManagedWatchlist />} />
                         <Route path="/configuration" element={<Configuration />} />
-                        <Route path="/watchlistUpdate" element={<WatchlistUpdate />} />
+                        <Route path="/unmanagedWatchlist" element={<UnmanagedWatchlist />} />
                     </Routes>
                 </div>
             </div>
