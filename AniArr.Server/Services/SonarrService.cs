@@ -38,10 +38,11 @@ public class SonarrService
 
         var filter = Builders<SonarrConfig>.Filter.Eq(x => x.Id, nameof(SonarrConfig));
         var update = Builders<SonarrConfig>.Update.Set(x => x.SonarrConnectionDetails, sonarrConnectionDetails);
+        UpdateOptions updateOptions = new() { IsUpsert = true };
 
         var collection = _mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
 
-        await collection.UpdateOneAsync(filter, update);
+        await collection.UpdateOneAsync(filter, update, updateOptions);
 
         return true;
     }
