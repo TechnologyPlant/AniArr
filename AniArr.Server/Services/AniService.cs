@@ -61,7 +61,7 @@ public partial class AniService
 
     public async Task<AnilistConfigModel> GetConfigAsync(CancellationToken cancellationToken)
     {
-        var collection = _mongoDbService.GetCollection<AnilistConfigModel>(nameof(AnilistConfigModel));
+        var collection = _mongoDbService.GetCollection<AnilistConfigModel>();
         var config = await collection.Find(x => x.Id == nameof(AnilistConfigModel)).FirstOrDefaultAsync(cancellationToken);
         return config ?? new();
     }
@@ -70,7 +70,7 @@ public partial class AniService
     {
         var filter = Builders<AnilistConfigModel>.Filter.Eq(x => x.Id, nameof(AnilistConfigModel));
 
-        var collection = _mongoDbService.GetCollection<AnilistConfigModel>(nameof(AnilistConfigModel));
+        var collection = _mongoDbService.GetCollection<AnilistConfigModel>();
         var update = Builders<AnilistConfigModel>.Update
             .Set(x => x.UserName, username);
         var updateOptions = new UpdateOptions { IsUpsert = true };
@@ -97,7 +97,7 @@ public partial class AniService
                 var model = new ReplaceOneModel<FribbAniListItem>(filter, doc) { IsUpsert = true };
                 models.Add(model);
             }
-            var collection = _mongoDbService.GetCollection<FribbAniListItem>("fribbList");
+            var collection = _mongoDbService.GetCollection<FribbAniListItem>();
             await collection.BulkWriteAsync(models);
 
         }
@@ -118,7 +118,7 @@ public partial class AniService
 
         Dictionary<int, WatchlistItem> watchlistDictionary = new();
 
-        var fribbCollection = _mongoDbService.GetCollection<FribbAniListItem>("fribbList");
+        var fribbCollection = _mongoDbService.GetCollection<FribbAniListItem>();
 
         foreach (var item in aniListItems)
         {
@@ -168,19 +168,19 @@ public partial class AniService
             });
         }
 
-        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>();
         await watchlistCollection.BulkWriteAsync(models);
     }
 
     public IQueryable<WatchlistItem> GetWatchlistEntries()
     {
-        var collection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+        var collection = _mongoDbService.GetCollection<WatchlistItem>();
         return collection.AsQueryable();
     }
 
     public async Task DeleteAllWatchListItem(CancellationToken cancellationToken)
     {
-        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>();
 
         var filter = Builders<WatchlistItem>.Filter.Empty;
         await watchlistCollection.DeleteManyAsync(filter, cancellationToken);
@@ -190,7 +190,7 @@ public partial class AniService
     {
         var filter = Builders<WatchlistItem>.Filter.Eq(d => d.TvdbId, watchlistItem.TvdbId);
         var replaceOptions = new ReplaceOptions() { IsUpsert = true };
-        var collection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+        var collection = _mongoDbService.GetCollection<WatchlistItem>();
         await collection.ReplaceOneAsync(filter, watchlistItem, replaceOptions, cancellationToken);
     }
 }

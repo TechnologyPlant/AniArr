@@ -43,7 +43,7 @@ public partial class SonarrService(ILogger<SonarrService> logger, HttpClient htt
         var update = Builders<SonarrConfig>.Update.Set(x => x.SonarrConnectionDetails, sonarrConnectionDetails);
         UpdateOptions updateOptions = new() { IsUpsert = true };
 
-        var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var collection = mongoDbService.GetCollection<SonarrConfig>();
 
         await collection.UpdateOneAsync(filter, update, updateOptions);
 
@@ -54,7 +54,7 @@ public partial class SonarrService(ILogger<SonarrService> logger, HttpClient htt
         LogMethod();
         try
         {
-            var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+            var collection = mongoDbService.GetCollection<SonarrConfig>();
             var sonarrConfig = (await collection.FindAsync(x => x.Id == nameof(SonarrConfig))).FirstOrDefault();
 
             SetupClient(sonarrConfig.SonarrConnectionDetails);
@@ -122,7 +122,7 @@ public partial class SonarrService(ILogger<SonarrService> logger, HttpClient htt
         LogMethod();
         var filter = Builders<SonarrConfig>.Filter.Eq(x => x.Id, nameof(SonarrConfig));
 
-        var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var collection = mongoDbService.GetCollection<SonarrConfig>();
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
 
         var result = await collection.ReplaceOneAsync(filter, sonarrConfig, replaceOptions);
@@ -131,7 +131,7 @@ public partial class SonarrService(ILogger<SonarrService> logger, HttpClient htt
     public async Task<SonarrConfig> GetSonarrConfig()
     {
         LogMethod();
-        var collection = mongoDbService.GetCollection<SonarrConfig>(nameof(SonarrConfig));
+        var collection = mongoDbService.GetCollection<SonarrConfig>();
         var config = await collection.Find(x => x.Id == nameof(SonarrConfig)).FirstOrDefaultAsync();
         return config ?? new();
     }

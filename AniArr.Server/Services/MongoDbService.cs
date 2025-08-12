@@ -22,8 +22,8 @@ public class MongoDbService
         _logger = logger;
     }
 
-    public IMongoCollection<T> GetCollection<T>(string name) =>
-        _database.GetCollection<T>(name);
+    public IMongoCollection<T> GetCollection<T>() =>
+        _database.GetCollection<T>(typeof(T).Name);
 
 }
 
