@@ -9,7 +9,7 @@ public static class WatchlistItemEndpoints
 {
     public static IEndpointRouteBuilder MapWatchlistGroup(this RouteGroupBuilder group)
     {
-        group.MapGet("/new", GetNewWatchlistItems);
+        group.MapPost("/Refresh", RefreshWatchListItems);
         group.MapGet("/", GetWatchlistItems);
         group.MapDelete("/", DeleteWatchlistItems);
         group.MapPut("/", PutWatchlistItem);
@@ -17,11 +17,12 @@ public static class WatchlistItemEndpoints
         return group;
     }
 
-    static async Task<IResult> GetNewWatchlistItems([FromServices] AniService aniService, CancellationToken cancellationToken = default)
+    static async Task<IResult> RefreshWatchListItems([FromServices] AniService aniService, CancellationToken cancellationToken = default)
     {
         try
         {
-            return Results.Ok(await aniService.GetUpdatedWatchlistEntries(cancellationToken));
+            await aniService.GetUpdatedWatchlistEntries(cancellationToken);
+            return Results.Ok();
         }
         catch (Exception ex)
         {
@@ -29,11 +30,21 @@ public static class WatchlistItemEndpoints
         }
     }
 
-    static async Task<IResult> GetWatchlistItems([FromServices] AniService aniService, [FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken cancellationToken = default)
+    static async Task<IResult> GetWatchlistItems([FromServices] AniService aniService, [FromQuery] bool managed, [FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await aniService.GetWatchlistEntries().Skip(skip).Take(take).ToListAsync(cancellationToken);
+            var result = await aniService.GetWatchlistEntries()
+                .Where(x => x.AniListItems.Any(y => y.Managed == managed))
+                .Skip(skip)
+                .Take(take)
+                .Select(x => new WatchlistItem()
+                {
+                    Title = x.Title,
+                    TvdbId = x.TvdbId,
+                    AniListItems = x.AniListItems.Where(x => x.Managed == managed).ToList(),
+                })
+                .ToListAsync(cancellationToken);
 
             return Results.Ok(result);
         }

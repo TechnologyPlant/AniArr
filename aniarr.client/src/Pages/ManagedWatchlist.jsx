@@ -7,7 +7,7 @@ export default function ManagedWatchlist() {
     const [watchList, setWatchList] = useState([]);
 
     const LoadAnilistWatchlist = async () => {
-        await fetch('WatchListItem')
+        await fetch('WatchListItem?managed=true')
             .then(res => res.json())
             .then(data => setWatchList(data))
     }

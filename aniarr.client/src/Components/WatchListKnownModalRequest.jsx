@@ -7,7 +7,6 @@ const WatchListKnownModalRequest = ({
 }) => {
     if (!isOpen) return null;
 
-    const [lookingUp, setLookingUp] = useState(false);
     const [seriesType, setSeriesType] = useState("standard");
     const [lookupDetails, setLookupDetails] = useState({
         folder: "",
@@ -30,6 +29,11 @@ const WatchListKnownModalRequest = ({
         await closeModalAndRefresh();
     }
     async function acknowledge() {
+
+        watchListItem.aniListItems.forEach(anilistItem => {
+            anilistItem.managed = true;
+        });
+
         const response = await fetch("WatchListItem", {
             method: "PUT",
             headers: {
@@ -78,7 +82,6 @@ const WatchListKnownModalRequest = ({
     }
     async function fetchAdditionalData() {
         try {
-            setLookingUp(true);
             const response = await fetch(`/Sonarr/Lookup/${watchListItem.tvdbId}`);
             const data = await response.json();
             setLookupDetails(data);
@@ -86,8 +89,6 @@ const WatchListKnownModalRequest = ({
         } catch (error) {
             setLookupDetails(null);
             console.error("Error fetching additional data:", error);
-        } finally {
-            setLookingUp(false);
         }
     }
 

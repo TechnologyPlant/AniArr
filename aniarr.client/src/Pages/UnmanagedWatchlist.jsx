@@ -9,7 +9,8 @@ export default function UnmanagedWatchlist() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedWatchListItem, setSelectedWatchListItem] = useState('');
     async function LoadAnilistWatchlist() {
-        await fetch('WatchListItem/new')
+        await fetch('WatchListItem/Refresh', { method: "POST" });
+        await fetch('WatchListItem?managed=false')
             .then(res => res.json())
             .then(async data => {
                 setExistingWatchList([]);

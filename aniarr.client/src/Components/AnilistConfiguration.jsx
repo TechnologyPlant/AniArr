@@ -23,6 +23,19 @@ export default function AnilistConfiguration() {
         }
     }
 
+    const clearWatchlist = async () => {
+        const response = await fetch('WatchListItem', {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            toast('Cleared existing watchlist items');
+        }
+        else {
+            toast('Failed to clear existing watchlist items');
+        }
+    }
+
 
     useEffect(() => {
         const getUsername = async () => {
@@ -37,10 +50,10 @@ export default function AnilistConfiguration() {
     return (
         <div>
             <ToastContainer
-            position="bottom-right"
+                position="bottom-right"
             />
             <div>
-            <h2>Anilist Configuration</h2>
+                <h2>Anilist Configuration</h2>
             </div>
             <div>
                 <input
@@ -52,8 +65,13 @@ export default function AnilistConfiguration() {
             </div>
             <div>
                 <button
-                    onClick={()=>saveUsername()}
+                    onClick={() => saveUsername()}
                 >Save user</button>
+            </div>
+            <div>
+                <button
+                    onClick={() => clearWatchlist()}
+                >Clear Watchlist</button>
             </div>
         </div>
     );

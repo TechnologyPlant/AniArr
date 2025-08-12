@@ -1,5 +1,6 @@
 ﻿using AniArr.Server.Entities;
 using AniArr.Server.Entities.GraphQLWatchList;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text;
 using System.Text.Json;
@@ -107,7 +108,7 @@ public partial class AniService
         }
     }
 
-    public async Task<List<WatchlistItem>> GetUpdatedWatchlistEntries(CancellationToken cancellationToken)
+    public async Task GetUpdatedWatchlistEntries(CancellationToken cancellationToken)
     {
         var config = await GetConfigAsync(cancellationToken);
         var watchlistEntries = await GetUserWatchListAsync(config.UserName, cancellationToken);
@@ -118,6 +119,7 @@ public partial class AniService
         Dictionary<int, WatchlistItem> watchlistDictionary = new();
 
         var fribbCollection = _mongoDbService.GetCollection<FribbAniListItem>("fribbList");
+
         foreach (var item in aniListItems)
         {
             var fribbItem = await fribbCollection.Find(x => x.AniListId == item.AniListId).FirstOrDefaultAsync(cancellationToken);
@@ -139,45 +141,41 @@ public partial class AniService
             }
         }
 
-        var existingWatchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
-
-        foreach (var item in watchlistDictionary)
+        var models = new List<WriteModel<WatchlistItem>>();
+        foreach (var watchlistItem in watchlistDictionary.Values)
         {
-            var existingWatchlistItem = await existingWatchlistCollection.Find(x => x.TvdbId == item.Key).FirstOrDefaultAsync(cancellationToken);
-            if (existingWatchlistItem is null) continue;
-            item.Value.AniListItems.ExceptWith(existingWatchlistItem.AniListItems);
+            var aniListIds = watchlistItem.AniListItems.Select(a => a.AniListId).ToList();
+
+            var filter = Builders<WatchlistItem>.Filter.And(
+                Builders<WatchlistItem>.Filter.Eq(w => w.TvdbId, watchlistItem.TvdbId),
+                Builders<WatchlistItem>.Filter.Not(
+                    Builders<WatchlistItem>.Filter.ElemMatch(
+                        w => w.AniListItems,
+                        Builders<AniListItem>.Filter.In(a => a.AniListId, aniListIds)
+                    )
+                )
+            );
+
+            var update = Builders<WatchlistItem>.Update.PushEach(
+                w => w.AniListItems,
+                watchlistItem.AniListItems
+            )
+                .Set(w => w.Title, watchlistItem.Title);
+
+            models.Add(new UpdateOneModel<WatchlistItem>(filter, update)
+            {
+                IsUpsert = true
+            });
         }
 
-        return [.. watchlistDictionary.Values.Where(x => x.AniListItems.Count > 0)];
+        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
+        await watchlistCollection.BulkWriteAsync(models);
     }
 
     public IQueryable<WatchlistItem> GetWatchlistEntries()
     {
         var collection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
-
         return collection.AsQueryable();
-    }
-    public async Task SaveWatchlistItem(WatchlistItem watchlistItem)
-    {
-        var models = new List<WriteModel<WatchlistItem>>();
-        var watchlistCollection = _mongoDbService.GetCollection<WatchlistItem>(nameof(WatchlistItem));
-
-        var existing = await watchlistCollection.Find(x => x.TvdbId == watchlistItem.TvdbId).FirstOrDefaultAsync();
-
-        if (existing is null)
-            existing = watchlistItem;
-        else
-        {
-            existing.AniListItems.UnionWith(watchlistItem.AniListItems);
-        }
-
-        var update = Builders<WatchlistItem>.Update
-            .PushEach(x => x.AniListItems, watchlistItem.AniListItems);
-        var updateOptions = new UpdateOptions { IsUpsert = true };
-        var filter = Builders<WatchlistItem>
-            .Filter.Eq(d => d.TvdbId, watchlistItem.TvdbId);
-
-        var result = await watchlistCollection.UpdateOneAsync(filter, update, updateOptions);
     }
 
     public async Task DeleteAllWatchListItem(CancellationToken cancellationToken)
