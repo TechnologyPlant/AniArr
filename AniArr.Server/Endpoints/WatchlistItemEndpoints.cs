@@ -30,14 +30,14 @@ public static class WatchlistItemEndpoints
         }
     }
 
-    static async Task<IResult> GetWatchlistItems([FromServices] AniService aniService, [FromQuery] bool managed, [FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken cancellationToken = default)
+    static async Task<IResult> GetWatchlistItems([FromServices] AniService aniService, [FromQuery] bool managed, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         try
         {
             var result = await aniService.GetWatchlistEntries()
                 .Where(x => x.AniListItems.Any(y => y.Managed == managed))
-                .Skip(skip)
-                .Take(take)
+                .Skip(--page * pageSize)
+                .Take(pageSize)
                 .Select(x => new WatchlistItem()
                 {
                     Title = x.Title,
